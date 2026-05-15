@@ -29,6 +29,10 @@ interface TripState {
   packedIds: string[];
   customPacking: PackingItem[];
   visitedIds: string[];
+  /** IDs of bundled packing items that the user swiped to delete.
+      Custom items get removed from customPacking directly; bundled items
+      can't be removed from code, so we hide them via this list. */
+  hiddenIds: string[];
   napBaseline?: NapBaseline;
 }
 
@@ -38,7 +42,7 @@ export const DEFAULT_NAP_BASELINE: NapBaseline = {
   offsetHours: 7,
 };
 
-const EMPTY: TripState = { packedIds: [], customPacking: [], visitedIds: [] };
+const EMPTY: TripState = { packedIds: [], customPacking: [], visitedIds: [], hiddenIds: [] };
 
 const uniq = (arr: string[]) => Array.from(new Set(arr));
 
@@ -62,6 +66,7 @@ export function useTripState() {
           packedIds: data.packedIds ?? [],
           customPacking: data.customPacking ?? [],
           visitedIds: data.visitedIds ?? [],
+          hiddenIds: data.hiddenIds ?? [],
         });
         setSynced(true);
       },
@@ -96,6 +101,14 @@ export function useTripState() {
     packedIds: state.packedIds,
     customPacking: state.customPacking,
     visitedIds: state.visitedIds,
+    hiddenIds: state.hiddenIds,
+
+    setHidden: (id: string, hidden: boolean) => {
+      const next = hidden
+        ? uniq([...state.hiddenIds, id])
+        : state.hiddenIds.filter((x) => x !== id);
+      writeField('hiddenIds', next);
+    },
 
     setPacked: (id: string, packed: boolean) => {
       const next = packed

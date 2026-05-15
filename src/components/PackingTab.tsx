@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Check, Plus, Trash2, Baby, ShoppingBag, Wind, Zap, AlertCircle, ChevronDown, Shirt, Sparkles, GripVertical as Grips, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -226,47 +226,62 @@ const SortablePackingItem: React.FC<{
     transition,
   };
 
+  // Swipe-right-to-delete threshold (in px). Past this, releasing fires deleteItem.
+  const SWIPE_THRESHOLD = 110;
+
   return (
-    <div 
+    <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-4 bg-white p-4 rounded-2xl border transition-all ${
-        isDragging ? 'opacity-50' : 'opacity-100'
-      } ${
-        item.isPacked ? 'border-transparent bg-gray-50' : 'border-gray-50 shadow-sm'
-      } ${isOverlay ? 'shadow-xl scale-105 border-med-blue z-50' : ''}`}
+      className={`relative ${isDragging ? 'opacity-50' : 'opacity-100'} ${isOverlay ? 'z-50' : ''}`}
     >
-      <div 
-        {...attributes} 
-        {...listeners}
-        className="cursor-grab active:cursor-grabbing p-1 text-gray-300 hover:text-med-blue transition-colors"
-      >
-        <Grips className="w-3.5 h-3.5" />
+      {/* Red "delete" background revealed when the user swipes right */}
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-med-coral/80 to-med-coral text-white flex items-center justify-start pl-5 gap-2 pointer-events-none">
+        <Trash2 className="w-5 h-5" />
+        <span className="text-[10px] font-black uppercase tracking-widest">Swipe to delete</span>
       </div>
 
-      <button 
-        onClick={() => toggleItem(item.id)}
-        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
-          item.isPacked 
-          ? 'bg-med-blue text-white shadow-lg shadow-med-blue/30' 
-          : 'bg-gray-100 text-transparent border border-gray-200'
-        }`}
+      {/* The actual row — slides on top of the red background */}
+      <motion.div
+        drag="x"
+        dragDirectionLock
+        dragConstraints={{ left: 0, right: 240 }}
+        dragElastic={{ left: 0, right: 0.6 }}
+        onDragEnd={(_, info) => {
+          if (info.offset.x > SWIPE_THRESHOLD) {
+            deleteItem(item.id);
+          }
+        }}
+        whileTap={{ cursor: 'grabbing' }}
+        className={`relative group flex items-center gap-4 bg-white p-4 rounded-2xl border transition-colors ${
+          item.isPacked ? 'border-transparent bg-gray-50' : 'border-gray-50 shadow-sm'
+        } ${isOverlay ? 'shadow-xl scale-105 border-med-blue' : ''}`}
       >
-        <Check className="w-4 h-4" />
-      </button>
-      
-      <EditableItemText 
-        text={item.name} 
-        isPacked={item.isPacked} 
-        onSave={(newName) => updateItemName(item.id, newName)} 
-        />
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing p-1 text-gray-300 hover:text-med-blue transition-colors"
+        >
+          <Grips className="w-3.5 h-3.5" />
+        </div>
 
-      <button 
-        onClick={() => deleteItem(item.id)}
-        className="opacity-0 group-hover:opacity-100 p-2 text-gray-300 hover:text-med-coral transition-all"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
+        <button
+          onClick={() => toggleItem(item.id)}
+          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+            item.isPacked
+              ? 'bg-med-blue text-white shadow-lg shadow-med-blue/30'
+              : 'bg-gray-100 text-transparent border border-gray-200'
+          }`}
+        >
+          <Check className="w-4 h-4" />
+        </button>
+
+        <EditableItemText
+          text={item.name}
+          isPacked={item.isPacked}
+          onSave={(newName) => updateItemName(item.id, newName)}
+        />
+      </motion.div>
     </div>
   );
 };
@@ -274,13 +289,30 @@ const SortablePackingItem: React.FC<{
 export const PackingTab = () => {
   const trip = useTripState();
 
-  // Items = bundled defaults + user-added custom items. Packed-state comes
-  // from Firestore (when signed in) or from local fallback state (when not).
+  // Items = bundled defaults + user-added custom items, MINUS anything the
+  // user swiped to delete (tracked in trip.hiddenIds).
   const items = useMemo<PackingItem[]>(() => {
     const base = [...INITIAL_PACKING_LIST, ...trip.customPacking];
     const packed = new Set(trip.packedIds);
-    return base.map((it) => ({ ...it, isPacked: packed.has(it.id) }));
-  }, [trip.packedIds, trip.customPacking]);
+    const hidden = new Set(trip.hiddenIds);
+    return base
+      .filter((it) => !hidden.has(it.id))
+      .map((it) => ({ ...it, isPacked: packed.has(it.id) }));
+  }, [trip.packedIds, trip.customPacking, trip.hiddenIds]);
+
+  // Last deleted snapshot — drives the "Undo" toast. Cleared after a few seconds.
+  const [lastDeleted, setLastDeleted] = useState<{
+    item: PackingItem;
+    wasCustom: boolean;
+    wasPacked: boolean;
+    deletedAt: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!lastDeleted) return;
+    const id = setTimeout(() => setLastDeleted(null), 6000);
+    return () => clearTimeout(id);
+  }, [lastDeleted]);
 
   // Drag-to-reorder ordering is device-local (presentation only) — not synced
   // to Firestore. We accept any reorder operation by no-op'ing it for now;
@@ -349,15 +381,42 @@ export const PackingTab = () => {
   };
 
   const deleteItem = (id: string) => {
-    // Bundled items can't be deleted (they're part of the trip template).
-    // Only user-added custom items can be removed.
-    if (trip.customPacking.some((i) => i.id === id)) {
+    // Find the item (custom or bundled) so we can preserve enough info to undo.
+    const customMatch = trip.customPacking.find((i) => i.id === id);
+    const bundledMatch = customMatch ? null : INITIAL_PACKING_LIST.find((i) => i.id === id);
+    const matched = customMatch || bundledMatch;
+    if (!matched) return;
+
+    const wasPacked = trip.packedIds.includes(id);
+
+    if (customMatch) {
+      // User-added item — really remove it from the list.
       trip.removeCustomItem(id);
+    } else {
+      // Bundled item — hide it (so it disappears from the list without
+      // touching the hardcoded INITIAL_PACKING_LIST).
+      trip.setHidden(id, true);
     }
-    // Also un-pack it if it was packed.
-    if (trip.packedIds.includes(id)) {
-      trip.setPacked(id, false);
+    if (wasPacked) trip.setPacked(id, false);
+
+    setLastDeleted({
+      item: matched,
+      wasCustom: !!customMatch,
+      wasPacked,
+      deletedAt: Date.now(),
+    });
+  };
+
+  const undoDelete = () => {
+    if (!lastDeleted) return;
+    const { item, wasCustom, wasPacked } = lastDeleted;
+    if (wasCustom) {
+      trip.addCustomItem(item);
+    } else {
+      trip.setHidden(item.id, false);
     }
+    if (wasPacked) trip.setPacked(item.id, true);
+    setLastDeleted(null);
   };
 
   const getCategoryImage = (cat: PackingCategory) => {
@@ -704,6 +763,40 @@ export const PackingTab = () => {
           font-style: normal;
         }
       `}</style>
+
+      {/* Undo toast — shows after a swipe-delete, auto-dismisses after 6s */}
+      <AnimatePresence>
+        {lastDeleted && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', damping: 24, stiffness: 320 }}
+            className="fixed bottom-6 left-4 right-4 z-[200] max-w-md mx-auto bg-med-dark text-white rounded-2xl shadow-2xl shadow-med-dark/40 p-3.5 flex items-center gap-3 border border-white/10"
+          >
+            <div className="w-9 h-9 bg-med-coral/20 rounded-xl flex items-center justify-center shrink-0">
+              <Trash2 className="w-4 h-4 text-med-coral" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-black uppercase tracking-widest leading-none">Removed</p>
+              <p className="text-xs font-bold opacity-80 mt-1 truncate">{lastDeleted.item.name}</p>
+            </div>
+            <button
+              onClick={undoDelete}
+              className="px-3.5 py-2 bg-med-yellow text-med-dark rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-transform shrink-0"
+            >
+              Undo
+            </button>
+            <button
+              onClick={() => setLastDeleted(null)}
+              className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center active:scale-90 transition-transform shrink-0"
+              aria-label="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
