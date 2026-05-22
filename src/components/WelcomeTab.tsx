@@ -716,7 +716,7 @@ export const WelcomeTab = ({ setActiveTab, liveStatus }: WelcomeTabProps) => {
           </div>
         </div>
 
-        <a 
+        <a
           href="https://open.spotify.com/playlist/4x9PGMnrcrkMiITFlhl8FU?si=-984o_cXQnyQ_XPMe_3ZXw&pi=iMflwcWGR7qDo"
           target="_blank"
           rel="noopener noreferrer"
@@ -724,6 +724,27 @@ export const WelcomeTab = ({ setActiveTab, liveStatus }: WelcomeTabProps) => {
         >
           Open Shared Playlist
         </a>
+      </section>
+
+      {/* Bon Dia greeting */}
+      <section className="flex flex-col items-center justify-center py-6 gap-3">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="text-5xl"
+        >
+          🌅
+        </motion.div>
+        <motion.p
+          initial={{ opacity: 0, letterSpacing: '0.1em' }}
+          animate={{ opacity: 1, letterSpacing: '0.4em' }}
+          transition={{ delay: 0.5, duration: 0.7 }}
+          className="text-3xl font-black uppercase text-med-blue tracking-[0.4em]"
+        >
+          BON DIA
+        </motion.p>
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">Good morning · Barcelona awaits</p>
       </section>
     </div>
   );
