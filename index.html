@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- maximum-scale=1 stops iOS Safari from auto-zooming when the user
+         focuses an input — in standalone-PWA mode, that zoom often gets
+         stuck after blur, leaving the page visibly oversized. Pinch-zoom
+         still works because it's an explicit user gesture. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
     <title>Baby in BCN</title>
     <meta name="description" content="Itinerary, packing, naps, and bookings for the Barcelona trip." />
 

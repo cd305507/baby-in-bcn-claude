@@ -29,10 +29,12 @@ export const LODGING: LodgingInfo[] = [
   {
     name: 'Stay U-nique Pau Claris',
     address: 'Carrer de Pau Claris, 99, 08009 Barcelona',
-    checkIn: 'May 25, 3:00 PM (Requested 9:30 AM)',
+    checkIn: 'May 25, 3:00 PM (Requested 10:30 AM)',
     checkOut: 'Jun 1, 11:00 AM',
     confirmation: '34713/2026',
     bookedVia: 'Direct',
+    attachmentUrl: '/lodging/barcelona-hotel-confirmation.pdf',
+    attachmentLabel: 'View Reservation PDF',
     wifiName: 'Stay Unique',
     wifiPassword: 'Stayunique5*',
     guestPortalUrl: 'https://book.stay-u-nique.com/guest/my-reservation/tag/ba67d57bb475418efb1e5db82190ea09?lang=en',
@@ -131,7 +133,7 @@ export const LODGING: LodgingInfo[] = [
     cribRequestUrl: 'https://book.stay-u-nique.com/guest/my-reservation/tag/ba67d57bb475418efb1e5db82190ea09?lang=en',
     notes: 'Pool & Common Terrace open daily: 09:00 - 21:00.',
     bookingRating: '8.5',
-    bookingRatingUrl: 'https://www.booking.com/hotel/es/stay-u-nique-apartments-pau-claris.html?aid=356980&label=gog235jc-10CAsoRkIic3RheS11LW5pcXVlLWFwYXJ0bWVudHMtcGF1LWNsYXJpc0gzWANosgKIAQGYATO4AQfIAQzYAQPoAQH4AQGIAgGoAgG4AqXF_c8GwAIB0gIkNjY2ZjBhNmMtYmI4Ny00ZTU4LWFlOTAtMDExMmVhOGQ0ZGYw2AIB4AIB&sid=d374d059fca94a2c487b679a3beaa213&dest_id=-372490&dest_type=city&dist=0&group_adults=2&group_children=0&hapos=1&hpos=1&no_rooms=1&req_adults=2&req_children=0&room1=A%2CA&sb_price_type=total&sr_order=popularity&srepoch=1778344618&srpvid=cd7f74d309ad013e&type=total&ucfs=1&'
+    bookingRatingUrl: 'https://www.booking.com/hotel/es/stay-u-nique-apartments-pau-claris.html'
   },
   {
     name: 'InSitges Ribera 41 (Apt #3)',
@@ -139,10 +141,12 @@ export const LODGING: LodgingInfo[] = [
     checkIn: 'Jun 1, 4:00 PM (Requested 12:00 PM)',
     checkOut: 'Jun 4, 11:00 AM',
     confirmation: '6322580576',
-    pin: '8119',
+    pin: '8119 OR 7818',
     bookedVia: 'Booking.com',
-    wifiName: 'InSitges_Beach_WiFi',
-    wifiPassword: 'golden-hour-sitges',
+    attachmentUrl: '/lodging/sitges-hotel-confirmation.pdf',
+    attachmentLabel: 'View Reservation PDF',
+    wifiName: 'Ask host on arrival',
+    wifiPassword: 'TBD',
     url: 'https://www.insitges.com/details/apartments-location/riberas-beach/',
     phone: '+34 938 111 222',
     whatsapp: '+34607248011',
@@ -166,6 +170,8 @@ export const LODGING: LodgingInfo[] = [
       'https://cf.bstatic.com/xdata/images/hotel/max1024x768/289132697.jpg?k=5dad00d2eee925435f21b985a05bb221c5dc2de06f48ce4b86797f4b726c9335&o='
     ],
     amenities: [
+      '3 Bedrooms',
+      '2 Bathrooms',
       'Seafront Condo',
       'Private Balcony w/ Sea View',
       'Elevator',
@@ -181,10 +187,11 @@ export const LODGING: LodgingInfo[] = [
     ],
     notes: 'Spectacular seafront condo on Platja de la Ribera. REMINDER: Check in 4 days ahead to confirm early arrival. NOTE: Crib was an extra €30 (paid during booking).',
     bookingRating: '9.5',
-    bookingRatingUrl: 'https://www.booking.com/hotel/es/insitges-ribera-s-beach.html?aid=318615&label=New_English_EN_DC%3A_District_of_Columbia_23537597665-XcYwniZq%2A8lLA08pBZKiYgS217287666922%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap%3Aneg&sid=d374d059fca94a2c487b679a3beaa213&dest_id=-403043&dest_type=city&dist=0&group_adults=2&group_children=0&hapos=1&hpos=1&no_rooms=1&req_adults=2&req_children=0&room1=A%2CA&sb_price_type=total&sr_order=popularity&srepoch=1778342884&srpvid=27a3716fc19803be&type=total&ucfs=1&'
+    bookingRatingUrl: 'https://www.booking.com/hotel/es/insitges-ribera-s-beach.html'
   }
 ];
 
+// ATTRACTION TICKETS — chronological order (date → time within day).
 export const TICKETS: TicketInfo[] = [
   {
     id: 't-park-guell',
@@ -301,6 +308,76 @@ export const TICKETS: TicketInfo[] = [
     bookingUrl: 'https://www.telefericdemontjuic.cat/en',
     price: '€15.00'
   }
+];
+
+// TRANSPORT_BOOKINGS — a separate "need to book" lane from attraction
+// tickets. Same TicketInfo shape so we can reuse the existing card
+// component, but rendered in its own section (different icon + color)
+// so the eye can immediately distinguish a Cabify ride from a museum
+// ticket. Chronological order.
+//
+// Booking URLs:
+//   - Cabify: `cabify://` custom scheme → openExternal() routes through a
+//     real anchor click, which iOS / Android hand directly to the installed
+//     Cabify app. (No app installed = the link fails silently.)
+//   - Welcome Pickups: `https://www.welcomepickups.com/...` → iOS universal-
+//     link handoff opens the WP app if installed, else falls back to web.
+export const TRANSPORT_BOOKINGS: TicketInfo[] = [
+  {
+    id: 't-transfer-bcn-arrival',
+    name: 'Welcome Pickups → BCN Apartment',
+    date: 'May 25',
+    time: '9:40 AM',
+    location: 'BCN T1 Arrivals → Carrer de Pau Claris, 99',
+    confirmation: 'NEED TO BOOK',
+    isBooked: false,
+    bookingUrl: 'https://www.welcomepickups.com/barcelona/airport-bcn-transfer/',
+    price: 'Quote at booking',
+  },
+  {
+    id: 't-cabify-park-guell',
+    name: 'Cabify Kids → Park Güell',
+    date: 'May 27',
+    time: '10:00 AM',
+    location: 'Carrer de Pau Claris, 99 → Park Güell',
+    confirmation: 'NEED TO BOOK',
+    isBooked: false,
+    bookingUrl: 'cabify://',
+    price: 'Quote in-app',
+  },
+  {
+    id: 't-cabify-sagrada',
+    name: 'Cabify Kids → Sagrada Família',
+    date: 'May 28',
+    time: '9:20 AM',
+    location: 'Carrer de Pau Claris, 99 → Carrer de Mallorca, 401',
+    confirmation: 'NEED TO BOOK',
+    isBooked: false,
+    bookingUrl: 'cabify://',
+    price: 'Quote in-app',
+  },
+  {
+    id: 't-transfer-sitges',
+    name: 'Welcome Pickups → Sitges Apartment',
+    date: 'Jun 1',
+    time: '10:00 AM',
+    location: 'Carrer de Pau Claris, 99 → Passeig de la Ribera, 41 (Sitges)',
+    confirmation: 'NEED TO BOOK',
+    isBooked: false,
+    bookingUrl: 'https://www.welcomepickups.com/barcelona/',
+    price: 'Quote at booking',
+  },
+  {
+    id: 't-transfer-bcn-departure',
+    name: 'Welcome Pickups → BCN Airport',
+    date: 'Jun 4',
+    time: '7:00 AM',
+    location: 'Passeig de la Ribera, 41 (Sitges) → BCN T1',
+    confirmation: 'NEED TO BOOK',
+    isBooked: false,
+    bookingUrl: 'https://www.welcomepickups.com/barcelona/airport-bcn-transfer/',
+    price: 'Quote at booking',
+  },
 ];
 
 export const EMERGENCY: EmergencyContact[] = [

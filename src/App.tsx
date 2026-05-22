@@ -30,7 +30,16 @@ type TabType = 'itinerary' | 'hub' | 'packing' | 'explorer' | 'nap' | 'welcome';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('welcome');
-  const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  // Lazy-init to today's day index so the first paint is correct even if the
+  // user never clicks the bottom-nav icon (e.g., they land via a Welcome CTA
+  // or a deep link). Before May 24 the diff is negative → falls back to Day 0.
+  // The bottom-nav handler further down re-snaps to today on every icon click.
+  const [currentDayIndex, setCurrentDayIndex] = useState(() => {
+    const tripStart = new Date('2026-05-24T00:00:00').getTime();
+    const diffDays = Math.floor((Date.now() - tripStart) / (1000 * 60 * 60 * 24));
+    const idx = ITINERARY_DATA.findIndex(d => d.dayNumber === diffDays);
+    return idx !== -1 ? idx : 0;
+  });
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [itinerarySticky, setItinerarySticky] = useState(false);
@@ -42,6 +51,36 @@ export default function App() {
       if (hash.startsWith('#t-')) {
         setActiveTab('hub');
         // Let HubTab handle the scroll as it has IDs on cards
+      } else if (hash.startsWith('#place-')) {
+        // Jump from the Welcome Today's Spotlight (or anywhere else) straight
+        // to a specific attraction card in the Explorer tab. The Explorer
+        // tab may not be mounted yet when the hash changes, and react-leaflet
+        // / framer-motion can delay paint of the card list — so we poll a
+        // few times for the element to exist before giving up.
+        setActiveTab('explorer');
+        const id = hash.slice(1); // drop the leading '#'
+        let tries = 0;
+        const findAndScroll = () => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Add a brief highlight ring so the user sees which card they landed on
+            el.classList.add('ring-2', 'ring-med-coral', 'ring-offset-2');
+            setTimeout(() => {
+              el.classList.remove('ring-2', 'ring-med-coral', 'ring-offset-2');
+            }, 2500);
+            // Clear the hash so back-navigation doesn't loop
+            setTimeout(() => {
+              if (window.location.hash === hash) {
+                window.history.replaceState(null, '', window.location.pathname + window.location.search);
+              }
+            }, 2000);
+            return;
+          }
+          tries++;
+          if (tries < 10) setTimeout(findAndScroll, 150);
+        };
+        setTimeout(findAndScroll, 200);
       } else if (hash.startsWith('#itinerary-day-')) {
         const parts = hash.split('-');
         const dayIdx = parseInt(parts[2]);

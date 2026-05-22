@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { openExternal } from "../lib/openExternal";
 import { MapContainer, TileLayer, Marker, Polyline, useMap, useMapEvents, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -38,7 +39,7 @@ export interface MapStop {
   place_type: string;
   /** Per-event emoji from the itinerary (e.g. ✈️, 🛂, 🍷). Overrides the place_type emoji when set. */
   emoji?: string;
-  transport_to_next?: 'Driving' | 'Walking' | 'Transit';
+  transport_to_next?: 'Driving' | 'Walking' | 'Bus' | 'Metro' | 'Flight';
   /** Estimated minutes to reach the NEXT stop, parsed from the recommended transit option's details. */
   transit_minutes?: number;
   /** Full transit detail (all options, insight, etc.) for the leg FROM this stop TO the next.
@@ -46,19 +47,31 @@ export interface MapStop {
   transit_info?: LegTransit;
   description?: string;
   address?: string;
+  /** Canonical Google Maps URL for this stop (the same name+city format
+      used everywhere else in the app). Used by tap-to-navigate buttons in
+      the map modal so they land on the right Google Maps place page. */
+  mapsUrl?: string;
 }
 
+// Mode-specific emoji & color spec:
+//   Car   = black, solid, slightly thicker line
+//   Walk  = dark grey, dashed
+//   Bus   = green, solid (mode-color matches the icon)
+//   Metro = red, solid (Barcelona M signage red)
+//   Flight= amber, dashed
 const TRANSPORT_EMOJI: Record<string, string> = {
-  Driving: '🚕',
-  Transit: '🚇',
+  Driving: '🚗',
+  Bus: '🚌',
+  Metro: '🚇',
   Walking: '🚶',
   Flight: '✈️',
 };
 
 const TRANSPORT_COLOR: Record<string, string> = {
-  Driving: '#4f46e5',
-  Transit: '#0d9488',
-  Walking: '#9ca3af',
+  Driving: '#1a1a1a',
+  Bus: '#16a34a',
+  Metro: '#dc2626',
+  Walking: '#525252',
   Flight: '#f59e0b',
 };
 
@@ -119,6 +132,9 @@ interface SelectedLeg {
   transit?: LegTransit;
   fromName: string;
   toName: string;
+  /** Name+city query string for Google Maps directions (e.g. "Sagrada Familia Barcelona"). */
+  fromQuery: string;
+  toQuery: string;
   type: string;
   minutes?: number;
 }
@@ -143,6 +159,18 @@ export const DailyMap = ({ dayData, loopBackToIndex }: DailyMapProps) => {
   // Group stops into pairs for polylines, carrying transport mode + minutes + full transit info.
   // Auto-detect Flight legs by raw distance (~> ~1100 km in degrees) so transatlantic
   // hops on travel days render with ✈️ instead of a car/walk emoji "across the ocean".
+  // Extract the `query=` value from a canonical mapsUrl. We pass these
+  // through so the route-directions button uses the same name+city strings
+  // (e.g. "Sagrada Familia Barcelona") that the rest of the app uses,
+  // never bare coordinates.
+  const queryFromMapsUrl = (mapsUrl?: string, fallbackName?: string): string => {
+    if (mapsUrl) {
+      const m = mapsUrl.match(/[?&]query=([^&]+)/);
+      if (m) return decodeURIComponent(m[1].replace(/\+/g, ' '));
+    }
+    return fallbackName || '';
+  };
+
   const polylineGroups = validStops.slice(0, -1).map((stop, i) => {
     const nextStop = validStops[i + 1];
     const dLat = nextStop.lat - stop.lat;
@@ -156,6 +184,8 @@ export const DailyMap = ({ dayData, loopBackToIndex }: DailyMapProps) => {
       transit: stop.transit_info,
       fromName: stop.name,
       toName: nextStop.name,
+      fromQuery: queryFromMapsUrl(stop.mapsUrl, stop.name),
+      toQuery: queryFromMapsUrl(nextStop.mapsUrl, nextStop.name),
     };
   });
 
@@ -177,19 +207,29 @@ export const DailyMap = ({ dayData, loopBackToIndex }: DailyMapProps) => {
       transit: last.transit_info,
       fromName: last.name,
       toName: target.name,
+      fromQuery: queryFromMapsUrl(last.mapsUrl, last.name),
+      toQuery: queryFromMapsUrl(target.mapsUrl, target.name),
     });
   }
 
+  // Line styles per user spec:
+  //   Car   → slightly thicker BLACK solid
+  //   Walk  → dark grey dashed
+  //   Bus   → solid green (mode color)
+  //   Metro → solid red (mode color)
+  //   Flight→ amber dashed
   const getPolylineStyles = (type: string) => {
     switch (type) {
       case 'Driving':
-        return { color: '#4f46e5', weight: 4, dashArray: undefined };
-      case 'Transit':
-        return { color: '#0d9488', weight: 4, dashArray: '10, 10' };
+        return { color: '#1a1a1a', weight: 5, dashArray: undefined };
+      case 'Bus':
+        return { color: '#16a34a', weight: 4, dashArray: undefined };
+      case 'Metro':
+        return { color: '#dc2626', weight: 4, dashArray: undefined };
       case 'Flight':
-        return { color: '#f59e0b', weight: 3, dashArray: '2, 6' };
+        return { color: '#f59e0b', weight: 4, dashArray: '12, 8' };
       default: // Walking
-        return { color: '#9ca3af', weight: 3, dashArray: '5, 10' };
+        return { color: '#525252', weight: 3, dashArray: '5, 10' };
     }
   };
 
@@ -213,18 +253,25 @@ export const DailyMap = ({ dayData, loopBackToIndex }: DailyMapProps) => {
         <ZoomTracker onZoom={setZoom} />
 
         {polylineGroups.map((group, i) => (
+          // react-leaflet v5 requires path styles to go through `pathOptions`
+          // — passing color/weight/dashArray as direct props only applies on
+          // first mount and leaks across day switches. The key includes
+          // group.type so React re-creates the polyline when the mode changes,
+          // forcing fresh styling.
           <Polyline
-            key={i}
+            key={`${i}-${group.type}`}
             positions={group.positions}
-            {...getPolylineStyles(group.type)}
+            pathOptions={getPolylineStyles(group.type)}
             smoothFactor={1.5}
           />
         ))}
 
         {/* Tappable transit pills at line midpoints. Color-coded to match the line.
             Hidden below MIN_ZOOM_FOR_PILLS so they never overlap markers when the
-            map is zoomed all the way out. Aggressive perpendicular offset on
-            individual legs prevents touching markers at any zoom we show them at. */}
+            map is zoomed all the way out. Pills sit RIGHT on the line midpoint
+            (no perpendicular offset) so it's unambiguous which line each pill
+            describes — earlier 500m offset put pills closer to adjacent lines
+            than their own. */}
         {zoom >= MIN_ZOOM_FOR_PILLS && polylineGroups.map((group, i) => {
           const [a, b] = group.positions;
           const dLat = b[0] - a[0];
@@ -233,18 +280,20 @@ export const DailyMap = ({ dayData, loopBackToIndex }: DailyMapProps) => {
           // Skip super-short legs entirely (~< 350m): midpoint would collide with markers
           if (len < 0.0035 && group.type !== 'Flight') return null;
 
-          // Place at midpoint, offset perpendicular. Forward legs and return legs
-          // naturally land on opposite sides because direction reverses.
-          const OFFSET = group.type === 'Flight' ? 0 : 0.005; // huge for ground legs (~500m)
-          const offLat = len > 0 ? (-dLng / len) * OFFSET : 0;
-          const offLng = len > 0 ? (dLat / len) * OFFSET : 0;
-          const pillLat = (a[0] + b[0]) / 2 + offLat;
-          const pillLng = (a[1] + b[1]) / 2 + offLng;
+          const pillLat = (a[0] + b[0]) / 2;
+          const pillLng = (a[1] + b[1]) / 2;
 
           const emoji = TRANSPORT_EMOJI[group.type] || '🚶';
           const color = TRANSPORT_COLOR[group.type] || '#6b7280';
-          const minutesLabel = group.minutes ? `${group.minutes}m` : '';
-          const W = 62;
+          // For flights without a minute count, label the pill "FLIGHT" so it
+          // reads as a flight from a glance — without a label, ✈️ alone over
+          // an ocean can be mistaken for a generic icon.
+          const minutesLabel = group.minutes
+            ? `${group.minutes}m`
+            : group.type === 'Flight'
+              ? 'FLIGHT'
+              : '';
+          const W = group.type === 'Flight' && !group.minutes ? 76 : 62;
           const H = 22;
           return (
             <Marker
@@ -258,6 +307,8 @@ export const DailyMap = ({ dayData, loopBackToIndex }: DailyMapProps) => {
                     transit: group.transit,
                     fromName: group.fromName,
                     toName: group.toName,
+                    fromQuery: group.fromQuery,
+                    toQuery: group.toQuery,
                     type: group.type,
                     minutes: group.minutes,
                   }),
@@ -385,10 +436,14 @@ export const DailyMap = ({ dayData, loopBackToIndex }: DailyMapProps) => {
                 style={{
                   background:
                     selectedLeg.type === 'Driving'
-                      ? 'linear-gradient(135deg, #eef2ff 0%, #ffffff 100%)'
-                      : selectedLeg.type === 'Transit'
-                        ? 'linear-gradient(135deg, #ccfbf1 0%, #ffffff 100%)'
-                        : 'linear-gradient(135deg, #f3f4f6 0%, #ffffff 100%)',
+                      ? 'linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%)'
+                      : selectedLeg.type === 'Bus'
+                        ? 'linear-gradient(135deg, #dcfce7 0%, #ffffff 100%)'
+                        : selectedLeg.type === 'Metro'
+                          ? 'linear-gradient(135deg, #fee2e2 0%, #ffffff 100%)'
+                          : selectedLeg.type === 'Flight'
+                            ? 'linear-gradient(135deg, #fef3c7 0%, #ffffff 100%)'
+                            : 'linear-gradient(135deg, #f3f4f6 0%, #ffffff 100%)',
                 }}
               >
                 <div className="min-w-0 flex items-start gap-3">
@@ -430,6 +485,8 @@ export const DailyMap = ({ dayData, loopBackToIndex }: DailyMapProps) => {
                   selectedLeg.transit.options.map((opt, i) => {
                     const baseEmoji =
                       opt.method === 'Cabify Kids' ? '🚕' :
+                      opt.method === 'Family Car' ? '🚗' :
+                      opt.method === 'Pre-booked Car' ? '🚗' :
                       opt.method === 'Metro' ? '🚇' :
                       opt.method === 'Bus' ? '🚌' :
                       '🚶';
@@ -437,7 +494,7 @@ export const DailyMap = ({ dayData, loopBackToIndex }: DailyMapProps) => {
                     return (
                       <button
                         key={i}
-                        onClick={() => opt.bookingUrl && window.open(opt.bookingUrl, '_blank')}
+                        onClick={() => opt.bookingUrl && openExternal(opt.bookingUrl)}
                         disabled={!opt.bookingUrl}
                         className={`w-full text-left px-3.5 py-3 rounded-2xl border flex items-start gap-3 transition-all ${
                           opt.isRecommended
@@ -489,11 +546,10 @@ export const DailyMap = ({ dayData, loopBackToIndex }: DailyMapProps) => {
               <div className="px-5 pb-4 pt-2 border-t border-gray-50">
                 <button
                   onClick={() => {
-                    const q = `${selectedLeg.fromName} to ${selectedLeg.toName}`;
-                    window.open(
-                      `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(selectedLeg.fromName)}&destination=${encodeURIComponent(selectedLeg.toName)}`,
-                      '_blank',
-                    );
+                    // Use the name+city query strings (e.g. "Sagrada Familia
+                    // Barcelona") so Google Maps directions resolves each end
+                    // to the right place page, not bare coords.
+                    openExternal(`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(selectedLeg.fromQuery || selectedLeg.fromName)}&destination=${encodeURIComponent(selectedLeg.toQuery || selectedLeg.toName)}`);
                   }}
                   className="w-full py-3 bg-med-dark text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                 >
@@ -515,11 +571,18 @@ export const DailyMap = ({ dayData, loopBackToIndex }: DailyMapProps) => {
             exit={{ y: 100, opacity: 0 }}
             className="absolute bottom-4 left-4 right-4 z-[1000] bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 transition-all"
           >
-            <div 
+            <div
               className="flex items-center justify-between gap-4 cursor-pointer"
               onClick={() => {
-                const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedStop.address || selectedStop.name)}`;
-                window.open(url, '_blank');
+                // Prefer the canonical name+city URL from the data file —
+                // the same one used in the itinerary list, so taps from the
+                // map and from the timeline always land on the same Google
+                // Maps place page. Fall back to address only if no canonical
+                // URL is set.
+                const url =
+                  selectedStop.mapsUrl ||
+                  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedStop.address || selectedStop.name)}`;
+                openExternal(url);
               }}
             >
               <div className="flex items-center gap-3 min-w-0">

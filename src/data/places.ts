@@ -402,7 +402,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: "10:00 AM - 8:00 PM",
     description: "Quiet botanical gardens on the south end of Sitges promenade.",
     babyFriendlyTips: "Perfect for a stroller nap and some shaded grass time. Very flat paths.",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Jardins+de+Terramar+Sitges",
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Jardins+de+Terramar+Sitges',
     isVisited: false,
     isBackup: false
   },
@@ -417,7 +417,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: "24 Hours",
     description: "A more secluded, cove-like beach near Sitges marina.",
     babyFriendlyTips: "Less windy than the main beaches. Stairs down can be tricky; carrier is best if not using the road entrance.",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Platja+d'Aiguadölç+Sitges",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Platja+d%27Aiguadolc+Sitges",
     isVisited: false,
     isBackup: false
   },
@@ -432,7 +432,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: "10:00 AM - 8:00 PM",
     description: "Cliffside museum with incredible medieval to modern art collection.",
     babyFriendlyTips: "Spacious compared to Cau Ferrat, but elevator is essential. The sea views are very calming for babies.",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Museu+de+Maricel+Sitges",
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Museu+de+Maricel+Sitges',
     isVisited: false,
     isBackup: false
   },
@@ -447,7 +447,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: "24 Hours",
     description: "Cleaner, wider, and more local than Barceloneta.",
     babyFriendlyTips: "Very wide promenade for strollers. Less tourists and scams, so a bit more relaxing for parents.",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Bogatell+Beach+Barcelona",
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Bogatell+Beach+Barcelona',
     isVisited: false,
     isBackup: true
   },
@@ -462,7 +462,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: "10:00 AM - 6:30 PM",
     description: "A former hospital and modernist masterpiece by Domènech i Montaner.",
     babyFriendlyTips: "Extremely spacious and outdoor oriented. Most buildings have ramp access. One of the best 'thoughtful' add-ons for families.",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Recinte+Modernista+de+Sant+Pau",
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Recinte+Modernista+de+Sant+Pau',
     isVisited: false,
     isBackup: true
   },
@@ -477,7 +477,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: "10:00 AM - 8:00 PM",
     description: "Large aquarium at the harbor with a long tunnel under the shark tank.",
     babyFriendlyTips: "Moving walkways in the tunnel make it easy to hold a baby and watch fish. Fully stroller accessible and climate controlled.",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=L+Aquarium+Barcelona",
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=L+Aquarium+Barcelona',
     isVisited: false,
     isBackup: true
   },
@@ -492,7 +492,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: "24 Hours",
     description: "A charming village with white and green beach huts and a quiet cove.",
     babyFriendlyTips: "Accessible via train (2 stops from Sitges). Very quiet, shallow waters, and truly unique aesthetic for photos.",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Platja+del+Garraf",
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Platja+del+Garraf',
     isVisited: false,
     isBackup: true
   },
@@ -507,7 +507,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: "10:00 AM - 8:00 PM",
     description: "Modern museum in Montjuïc dedicated to the works of Joan Miró.",
     babyFriendlyTips: "Very spacious, bright, and colorful—babies often love the high-contrast art. Fully accessible with lifts.",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Fundacio+Joan+Miro",
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Fundacio+Joan+Miro',
     isVisited: false,
     isBackup: true
   },
@@ -522,7 +522,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: "10:00 AM - 8:00 PM",
     description: "The iconic seaside church of Sitges, perched on a rock overlooking the Mediterranean.",
     babyFriendlyTips: "The terrace outside is great for photos. Stairs to the church are many; carrier is strictly needed for the interior.",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Sant+Bartomeu+i+Santa+Tecla+Sitges",
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Sant+Bartomeu+i+Santa+Tecla+Sitges',
     isVisited: false,
     isBackup: true
   },
@@ -537,7 +537,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: "24 Hours",
     description: "Barcelona's most famous and bustling urban beach.",
     babyFriendlyTips: "Very busy. Stick to the paved promenade for stroller walks. Lots of nearby restaurants with changing tables.",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Barceloneta+Beach+Barcelona",
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Barceloneta+Beach+Barcelona',
     isVisited: false,
     isBackup: false
   },
@@ -552,7 +552,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: "24 Hours",
     description: "Commonly cited as the most family-friendly beach in Barcelona due to its calm waters.",
     babyFriendlyTips: "Quieter than Barceloneta. Good playground nearby and easy access to the Port Olimpic facilities.",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Nova+Icaria+Beach+Barcelona",
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Nova+Icaria+Beach+Barcelona',
     isVisited: false,
     isBackup: true
   },
@@ -597,7 +597,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: '24 Hours',
     description: "A small, hidden square tucked behind the Cathedral. Quiet, leafy, with a fountain at the center. The pockmarked church wall is from a 1938 Civil War bombing.",
     babyFriendlyTips: "One of the calmest squares in the entire Gothic Quarter — ideal for letting Cam stretch his legs out of the stroller. Shaded benches around the fountain.",
-    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pla%C3%A7a+de+Sant+Felip+Neri+Barcelona',
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Placa+de+Sant+Felip+Neri+Barcelona',
     isVisited: false,
     isBackup: false
   },
@@ -612,7 +612,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: '24 Hours',
     description: "Medieval royal plaza framed by the Palau Reial Major, the Saló del Tinell, and the Chapel of Santa Àgata. The MUHBA museum entrance leads to underground Roman Barcino ruins.",
     babyFriendlyTips: "Open square, fully strollerable. The MUHBA museum has an elevator. Walls are stone-cool in summer — Cam can touch them.",
-    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pla%C3%A7a+del+Rei+Barcelona',
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Placa+del+Rei+Barcelona',
     isVisited: false,
     isBackup: false
   },
@@ -627,7 +627,7 @@ export const PLACES_DATA: PlaceExplorerItem[] = [
     hours: '24 Hours',
     description: "Palm-lined arcaded square just off La Rambla, with the two six-armed lampposts Gaudí designed early in his career (1879). Cafés ring the edge.",
     babyFriendlyTips: "Wide, flat, traffic-free — easiest stroller terrain in the Gothic Quarter. Grab a horchata from one of the perimeter cafés and let Cam watch the buskers.",
-    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pla%C3%A7a+Reial+Barcelona',
+    mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Placa+Reial+Barcelona',
     isVisited: false,
     isBackup: false
   }

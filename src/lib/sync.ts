@@ -14,7 +14,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db, TRIP_DOC_PATH } from './firebase';
 import { useAuth } from './auth';
-import { PackingItem } from '../types';
+import { PackingItem, PackingCategory } from '../types';
 
 export interface NapBaseline {
   /** Home-time (EST/EDT) wake time, displayed as e.g. "7:00 AM". */
@@ -33,6 +33,17 @@ interface TripState {
       Custom items get removed from customPacking directly; bundled items
       can't be removed from code, so we hide them via this list. */
   hiddenIds: string[];
+  /** Full ordered list of packing item IDs, in the order the user wants
+      them displayed. Includes both bundled and custom items. Items not
+      present in this list fall back to default order. */
+  packingOrder: string[];
+  /** Per-item category override. Used when the user drags a bundled item
+      to a different category — we can't mutate INITIAL_PACKING_LIST, so
+      we store the new category here. */
+  categoryOverrides: Record<string, PackingCategory>;
+  /** Per-item name override. Custom-item renames update customPacking
+      directly; bundled-item renames live here. */
+  nameOverrides: Record<string, string>;
   napBaseline?: NapBaseline;
 }
 
@@ -42,7 +53,15 @@ export const DEFAULT_NAP_BASELINE: NapBaseline = {
   offsetHours: 7,
 };
 
-const EMPTY: TripState = { packedIds: [], customPacking: [], visitedIds: [], hiddenIds: [] };
+const EMPTY: TripState = {
+  packedIds: [],
+  customPacking: [],
+  visitedIds: [],
+  hiddenIds: [],
+  packingOrder: [],
+  categoryOverrides: {},
+  nameOverrides: {},
+};
 
 const uniq = (arr: string[]) => Array.from(new Set(arr));
 
@@ -67,6 +86,9 @@ export function useTripState() {
           customPacking: data.customPacking ?? [],
           visitedIds: data.visitedIds ?? [],
           hiddenIds: data.hiddenIds ?? [],
+          packingOrder: data.packingOrder ?? [],
+          categoryOverrides: data.categoryOverrides ?? {},
+          nameOverrides: data.nameOverrides ?? {},
         });
         setSynced(true);
       },
@@ -102,6 +124,19 @@ export function useTripState() {
     customPacking: state.customPacking,
     visitedIds: state.visitedIds,
     hiddenIds: state.hiddenIds,
+    packingOrder: state.packingOrder,
+    categoryOverrides: state.categoryOverrides,
+    nameOverrides: state.nameOverrides,
+
+    setPackingOrder: (order: string[]) => writeField('packingOrder', order),
+
+    setNameOverride: (id: string, name: string) =>
+      writeField('nameOverrides', { ...state.nameOverrides, [id]: name }),
+
+    /** Replace the entire categoryOverrides map (used by drag-to-reorder when
+        multiple items may shift category at once). */
+    writeCategoryOverrides: (overrides: Record<string, PackingCategory>) =>
+      writeField('categoryOverrides', overrides),
 
     setHidden: (id: string, hidden: boolean) => {
       const next = hidden

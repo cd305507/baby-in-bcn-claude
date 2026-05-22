@@ -1,14 +1,14 @@
 export type BabyMode = 'Nap' | 'Routine' | 'Play';
 
 export interface TransitInfo {
-  method: 'Walking' | 'Bus' | 'Metro' | 'Cabify Kids';
+  method: 'Walking' | 'Bus' | 'Metro' | 'Cabify Kids' | 'Family Car' | 'Pre-booked Car';
   duration: string;
   costUSD: number;
   accessibilityNotes?: string;
 }
 
 export interface TransitOption {
-  method: 'Walking' | 'Bus' | 'Metro' | 'Cabify Kids';
+  method: 'Walking' | 'Bus' | 'Metro' | 'Cabify Kids' | 'Family Car' | 'Pre-booked Car';
   details: string;
   isRecommended?: boolean;
   bookingUrl?: string;
@@ -134,6 +134,11 @@ export interface LodgingInfo {
   };
   cribRequestNote?: string;
   cribRequestUrl?: string;
+  /** Path to a confirmation / booking PDF bundled with the site
+      (e.g. `/lodging/barcelona-hotel-confirmation.pdf`). */
+  attachmentUrl?: string;
+  /** Label for the open-attachment button (defaults to "View Confirmation"). */
+  attachmentLabel?: string;
 }
 
 export interface TicketDetailSection {
@@ -189,7 +194,7 @@ export interface DailyOutfit {
   recommendation: string;
 }
 
-export type PackingCategory = 'Family Essentials' | 'Adult Apparel' | 'Beach Gear' | 'Electronics' | 'Baby Clothes';
+export type PackingCategory = 'Family Essentials' | 'Adult Apparel' | 'Beach Gear' | 'Electronics' | 'Baby Clothes' | 'Toiletries';
 
 export interface PackingItem {
   id: string;

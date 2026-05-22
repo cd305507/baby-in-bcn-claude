@@ -16,7 +16,8 @@ import {
   Calendar,
   Briefcase,
   Ticket,
-  ChevronRight
+  ChevronRight,
+  X,
 } from 'lucide-react';
 import { ZzzIcon } from './icons/ZzzIcon';
 import { ITINERARY_DATA } from '../data/itinerary';
@@ -49,10 +50,23 @@ const MilestoneItem = ({ title, icon, completed }: { title: string; icon: React.
   </div>
 );
 
-const TapaCard = ({ name, description }: { name: string; description: string }) => (
-  <div className="p-4 bg-med-coral/5 rounded-2xl border border-med-coral/10 hover:bg-med-coral/10 transition-colors">
-    <p className="text-xs font-black text-med-coral uppercase mb-1">{name}</p>
-    <p className="text-[10px] text-gray-500 font-medium leading-tight">{description}</p>
+// Tapa card for the horizontal scroll lineup. Larger image area than the
+// old 2×2 grid so the photo can actually carry the card.
+const TapaCard = ({ name, description, image }: { name: string; description: string; image: string }) => (
+  <div className="min-w-[180px] max-w-[180px] bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm shrink-0">
+    <div className="relative w-full aspect-[4/3] bg-gray-100">
+      <img
+        src={image}
+        alt={name}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+    </div>
+    <div className="p-3">
+      <p className="text-xs font-black text-med-coral uppercase mb-1 leading-tight">{name}</p>
+      <p className="text-[10px] text-gray-500 font-medium leading-snug">{description}</p>
+    </div>
   </div>
 );
 
@@ -92,6 +106,51 @@ const PHOTO_CHECKPOINTS = [
     tip: 'The iconic bridge is best shot looking up from the narrow alleyway to capture the neo-Gothic details.',
     time: 'Weekday Mornings',
     babyTip: 'Very narrow streets—watch out for bikes and keep the stroller compact.'
+  },
+  {
+    id: 'casabatllo',
+    name: 'Casa Batlló',
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeTSMlks8GKYk0O-T8JZVx4bjI9pdrvN802g&s',
+    location: 'Passeig de Gràcia, 43',
+    tip: 'Cross to the opposite side of Passeig de Gràcia for the full skeletal facade and dragon-back roof. Blue hour (just after sunset) when the building lights up is the move.',
+    time: 'Blue Hour (Post-Sunset)',
+    babyTip: 'Wide sidewalks here — easy stroller territory. The traffic-island median is the best shooting spot.'
+  },
+  {
+    id: 'bunkers',
+    name: 'Bunkers del Carmel',
+    image: 'https://a.storyblok.com/f/190572/1000x562/68e2eceb20/header-5.jpg/m/1200x630',
+    location: 'Turó de la Rovira',
+    tip: '360° panorama of Barcelona from the old anti-aircraft battery. Sunrise here is otherworldly, sunset is packed — go early.',
+    time: 'Sunrise (~7 AM)',
+    babyTip: 'Steep climb to the top — carrier only, no stroller. Bring water; there are no facilities at the summit.'
+  },
+  {
+    id: 'placareial',
+    name: 'Plaça Reial',
+    image: 'https://www.barcelonaturisme.com/files/5445-19225-Imagen/Fanal_Pla%C3%A7a_Reial_c1.jpg',
+    location: 'Off La Rambla',
+    tip: "Frame Gaudí's six-armed iron lampposts against the arcaded square — his earliest public commission. Late afternoon light hits the yellow palms perfectly.",
+    time: 'Late Afternoon',
+    babyTip: 'Flat, traffic-free, plenty of room to push the stroller. Café terraces everywhere if Cam needs a feed.'
+  },
+  {
+    id: 'barceloneta',
+    name: 'Barceloneta Beach',
+    image: 'https://travel.usnews.com/dims4/USNEWS/718ce95/2147483647/resize/976x652%5E%3E/crop/976x652/quality/85/format/webp/?url=https%3A%2F%2Ftravel.usnews.com%2Fimages%2FBarceloneta_beach_Aimee_Tavares.jpg',
+    location: 'Platja de la Barceloneta',
+    tip: "Walk to the south end at the W Hotel for the iconic sail-shape against the Mediterranean. Frame Frank Gehry's golden fish from the marina path.",
+    time: 'Morning (Calm Sea)',
+    babyTip: 'Stroller-friendly Passeig Marítim runs the full beach. Cabin showers and changing rooms available at multiple stations.'
+  },
+  {
+    id: 'sitges-cau-ferrat',
+    name: 'Cau Ferrat Headland',
+    image: 'https://museusdesitges.cat/sites/default/files/styles/img700x450/public/mirador_baixa.jpg?itok=MT5GGm61',
+    location: 'Sitges',
+    tip: 'The whitewashed church on the rock framed by the sea is the Sitges postcard shot. Capture from the beach below as the sun dips behind it.',
+    time: 'Golden Hour',
+    babyTip: 'Promenade access is flat and stroller-friendly. The church courtyard has shaded benches.'
   }
 ];
 
@@ -156,11 +215,15 @@ export const WelcomeTab = ({ setActiveTab, liveStatus }: WelcomeTabProps) => {
           <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-med-dark via-med-dark/60 to-transparent" />
         </div>
 
-        {/* Top Header Icons */}
+        {/* Top Header Icons — airplane jumps to the Hub tab (flights + lodging) */}
         <div className="relative z-10 p-6 flex justify-end items-start">
-          <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20">
-            <Plane className="w-5 h-5 text-white" />
-          </div>
+          <button
+            onClick={() => setActiveTab('hub')}
+            aria-label="Open flights"
+            className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 text-white hover:bg-white/20 active:scale-90 transition-all"
+          >
+            <Plane className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Center Content */}
@@ -219,6 +282,63 @@ export const WelcomeTab = ({ setActiveTab, liveStatus }: WelcomeTabProps) => {
         </div>
       </section>
 
+
+      {/* Spotlight Place — pulls from Explorer to spark curiosity */}
+      <section className="space-y-3">
+        <div className="flex items-baseline justify-between px-2">
+          <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.25em]">Today's Spotlight</p>
+          <button
+            onClick={() => setActiveTab('explorer')}
+            className="text-[10px] font-black text-med-blue uppercase tracking-wider hover:text-med-dark transition-colors flex items-center gap-1"
+          >
+            See all places <ChevronRight className="w-3 h-3" />
+          </button>
+        </div>
+
+        <button
+          onClick={() => {
+            // Open the Explorer tab AND jump to the specific place card.
+            // App.tsx watches hashes starting with #place- and scrolls to
+            // the matching card after switching tabs.
+            window.location.hash = `place-${spotlightPlace.id}`;
+            setActiveTab('explorer');
+          }}
+          className="block w-full text-left relative h-72 rounded-[2.5rem] overflow-hidden shadow-xl group"
+        >
+          <img
+            src={spotlightPlace.image}
+            alt={spotlightPlace.name}
+            referrerPolicy="no-referrer"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+          {/* Category chip + rating */}
+          <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
+            <span className="px-3 py-1.5 bg-med-yellow text-med-dark text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
+              {spotlightPlace.category}
+            </span>
+            <span className="px-2.5 py-1 bg-white/90 backdrop-blur-md text-med-dark text-[10px] font-black tracking-wider rounded-full shadow-md flex items-center gap-1">
+              <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+              <span className="tabular-nums">{spotlightPlace.rating.toFixed(1)}</span>
+            </span>
+          </div>
+
+          {/* Bottom content */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 space-y-2">
+            <p className="text-[9px] font-black text-med-yellow uppercase tracking-[0.3em] flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3" /> {spotlightPlace.location}
+            </p>
+            <h3 className="text-white text-3xl font-black tracking-tighter leading-[0.95] uppercase">
+              {spotlightPlace.name}
+            </h3>
+            <p className="text-white/85 text-[11px] font-bold leading-snug flex items-start gap-1.5 line-clamp-2">
+              <Baby className="w-3 h-3 mt-0.5 shrink-0 text-med-coral" />
+              {spotlightPlace.babyFriendlyTips}
+            </p>
+          </div>
+        </button>
+      </section>
 
       {/* Today's Adventure — visual storyboard for today's plan */}
       <section className="space-y-3">
@@ -287,55 +407,69 @@ export const WelcomeTab = ({ setActiveTab, liveStatus }: WelcomeTabProps) => {
         </button>
       </section>
 
-      {/* Spotlight Place — pulls from Explorer to spark curiosity */}
+      {/* Trip at a Glance — full 12-day overview. Tap any row to jump to
+          that day in the Itinerary tab. */}
       <section className="space-y-3">
         <div className="flex items-baseline justify-between px-2">
-          <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.25em]">Today's Spotlight</p>
+          <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.25em]">Trip at a Glance</p>
           <button
-            onClick={() => setActiveTab('explorer')}
+            onClick={() => setActiveTab('itinerary')}
             className="text-[10px] font-black text-med-blue uppercase tracking-wider hover:text-med-dark transition-colors flex items-center gap-1"
           >
-            See all places <ChevronRight className="w-3 h-3" />
+            Open Itinerary <ChevronRight className="w-3 h-3" />
           </button>
         </div>
 
-        <button
-          onClick={() => setActiveTab('explorer')}
-          className="block w-full text-left relative h-72 rounded-[2.5rem] overflow-hidden shadow-xl group"
-        >
-          <img
-            src={spotlightPlace.image}
-            alt={spotlightPlace.name}
-            referrerPolicy="no-referrer"
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-50">
+          {ITINERARY_DATA.map((day, idx) => {
+            const isToday = !timeLeft && day.dayNumber === todayItinerary.dayNumber;
+            // "Mon May 25" → "5/25 · Mon"
+            const parts = day.date.split(' ');
+            const dow = parts[0];
+            const monthAbbr = parts[1];
+            const dayOfMonth = parts[2];
+            const monthNum = ({ Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 } as Record<string, number>)[monthAbbr] || '';
+            const shortDate = `${monthNum}/${dayOfMonth}`;
+            return (
+              <button
+                key={day.dayNumber}
+                onClick={() => {
+                  // Hash-based nav: App.tsx watches #itinerary-day-N and
+                  // switches tab + jumps to that day.
+                  window.location.hash = `itinerary-day-${idx}`;
+                }}
+                className={`w-full flex items-center gap-4 px-5 py-4 text-left group transition-colors ${
+                  isToday ? 'bg-med-yellow/10 hover:bg-med-yellow/20' : 'hover:bg-gray-50'
+                }`}
+              >
+                {/* Day badge */}
+                <div
+                  className={`shrink-0 w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-black leading-none ${
+                    isToday
+                      ? 'bg-med-yellow text-med-dark shadow-md'
+                      : 'bg-med-blue/10 text-med-blue'
+                  }`}
+                >
+                  <span className="text-[8px] uppercase tracking-widest opacity-70">Day</span>
+                  <span className="text-lg tabular-nums">{day.dayNumber}</span>
+                </div>
 
-          {/* Category chip + rating */}
-          <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-            <span className="px-3 py-1.5 bg-med-yellow text-med-dark text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
-              {spotlightPlace.category}
-            </span>
-            <span className="px-2.5 py-1 bg-white/90 backdrop-blur-md text-med-dark text-[10px] font-black tracking-wider rounded-full shadow-md flex items-center gap-1">
-              <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-              <span className="tabular-nums">{spotlightPlace.rating.toFixed(1)}</span>
-            </span>
-          </div>
+                {/* Date + title */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1.5">
+                    {shortDate} · {dow}
+                    {isToday && <span className="ml-2 text-med-coral">· Today</span>}
+                  </p>
+                  <p className="text-sm font-black text-med-dark leading-tight truncate group-hover:text-med-blue transition-colors">
+                    {day.title}
+                  </p>
+                </div>
 
-          {/* Bottom content */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 space-y-2">
-            <p className="text-[9px] font-black text-med-yellow uppercase tracking-[0.3em] flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3" /> {spotlightPlace.location}
-            </p>
-            <h3 className="text-white text-3xl font-black tracking-tighter leading-[0.95] uppercase">
-              {spotlightPlace.name}
-            </h3>
-            <p className="text-white/85 text-[11px] font-bold leading-snug flex items-start gap-1.5 line-clamp-2">
-              <Baby className="w-3 h-3 mt-0.5 shrink-0 text-med-coral" />
-              {spotlightPlace.babyFriendlyTips}
-            </p>
-          </div>
-        </button>
+                <ChevronRight className="w-4 h-4 text-gray-300 shrink-0 group-hover:text-med-blue group-hover:translate-x-0.5 transition-all" />
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       {/* Trip Milestones (The "Baby" Factor) */}
@@ -365,11 +499,29 @@ export const WelcomeTab = ({ setActiveTab, liveStatus }: WelcomeTabProps) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <TapaCard name="Patatas Bravas" description="Spicy potatoes with alioli. The ultimate classic." />
-          <TapaCard name="Pan con Tomate" description="Garlic, tomato, olive oil on toast. Simplicity." />
-          <TapaCard name="Croquetas" description="Creamy ham or mushroom bites. Crowd pleaser." />
-          <TapaCard name="Bombas" description="Barceloneta potato-meat balls with spicy sauce." />
+        {/* Horizontal scroll lineup — fits more breathing room per tapa than
+            a cramped 2×2 grid, and matches the Photo Checkpoints rhythm. */}
+        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-8 px-8 pb-2">
+          <TapaCard
+            name="Patatas Bravas"
+            description="Spicy potatoes with alioli. The ultimate classic."
+            image="https://www.allrecipes.com/thmb/n_OOwj92X4rpCZyQ8sULHBUR95k=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/230569-chef-johns-patatas-brazas-ddmfs-2X3-0917-2e7985bf896d4ea0b1baa2a0c826ea0d.jpg"
+          />
+          <TapaCard
+            name="Pan con Tomate"
+            description="Garlic, tomato, olive oil on toast. Simplicity."
+            image="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHOKyZdL9oMkwomUkJs_VUhptFFf6MBdp1cg&s"
+          />
+          <TapaCard
+            name="Croquetas"
+            description="Creamy ham or mushroom bites. Crowd pleaser."
+            image="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHCRYvZWLGir5lJQQUBZ8ArFRpw2wOjSxvew&s"
+          />
+          <TapaCard
+            name="Bombas"
+            description="Barceloneta potato-meat balls with spicy sauce."
+            image="https://www.cilantroandcitronella.com/wp-content/uploads/2016/06/bombas_1.jpg"
+          />
         </div>
       </section>
 
@@ -468,13 +620,17 @@ export const WelcomeTab = ({ setActiveTab, liveStatus }: WelcomeTabProps) => {
             >
               <div className="h-48 relative">
                 <img src={selectedPhoto.image} className="w-full h-full object-cover" />
-                <button 
+                {/* Decorative gradient — set to pointer-events-none so it
+                    doesn't sit on top of the X button and absorb the tap
+                    (it shares the same absolute-positioned layer). */}
+                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent pointer-events-none" />
+                <button
                   onClick={() => setSelectedPhoto(null)}
-                  className="absolute top-4 right-4 w-10 h-10 bg-black/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/40 transition-colors"
+                  aria-label="Close"
+                  className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 active:scale-90 transition-all"
                 >
-                  <Sparkles className="w-5 h-5 rotate-45" />
+                  <X className="w-5 h-5" />
                 </button>
-                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
               </div>
 
               <div className="p-8 pt-4 space-y-6">
@@ -522,32 +678,6 @@ export const WelcomeTab = ({ setActiveTab, liveStatus }: WelcomeTabProps) => {
           </>
         )}
       </AnimatePresence>
-
-      {/* Pro Traveler Tips */}
-      <section className="space-y-4">
-        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest px-2">Pro Traveler Tips</h3>
-        <div className="grid grid-cols-1 gap-4">
-          <div className="flex gap-4 bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100 items-center">
-            <div className="w-12 h-12 bg-med-blue/5 rounded-2xl flex items-center justify-center text-med-blue shrink-0">
-              <span className="text-xl font-black">9</span>
-            </div>
-            <div>
-              <h4 className="text-sm font-black text-med-dark uppercase">Dinner starts late</h4>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Most restaurants open at 8:30 PM for dinner. Plan baby's snacks accordingly!</p>
-            </div>
-          </div>
-          
-          <div className="flex gap-4 bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100 items-center">
-            <div className="w-12 h-12 bg-med-orange/5 rounded-2xl flex items-center justify-center text-med-orange shrink-0">
-              <span className="text-xl font-black">M</span>
-            </div>
-            <div>
-              <h4 className="text-sm font-black text-med-dark uppercase">Metro is your friend</h4>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">The T-Casual card is the best value. Strollers are common and most stations have lifts.</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Vibe Check / Playlist */}
       <section className="bg-gradient-to-br from-med-blue to-med-dark rounded-[3rem] p-10 text-white relative overflow-hidden">

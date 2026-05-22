@@ -1,15 +1,17 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, Plus, Trash2, Baby, ShoppingBag, Wind, Zap, AlertCircle, ChevronDown, Shirt, Sparkles, GripVertical as Grips, X } from 'lucide-react';
+import confetti from 'canvas-confetti';
+import { Check, Plus, Trash2, Baby, ShoppingBag, Wind, Zap, AlertCircle, ChevronDown, Shirt, Sparkles, GripVertical as Grips, X, Bath } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { INITIAL_PACKING_LIST, PACKING_RECOMMENDATIONS, DAILY_OUTFIT_RECOMMENDATIONS } from '../data/packing';
 import { PackingItem, PackingCategory } from '../types';
 import { useTripState } from '../lib/sync';
 import {
-  DndContext, 
+  DndContext,
   closestCenter,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragOverlay,
@@ -70,10 +72,14 @@ const SortableCategorySection: React.FC<{
       className={`mb-6 ${isDragging ? 'opacity-50' : 'opacity-100'}`}
     >
       <div className="flex items-center gap-2 mb-4 group/section">
-        <div 
-          {...attributes} 
+        {/* Section drag handle — same mobile-friendly 44 px hit target as
+            the item handle. touch-none prevents the browser from claiming
+            the gesture for scroll before dnd-kit's long-press fires. */}
+        <div
+          {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing p-2 text-gray-300 hover:text-med-blue transition-colors"
+          aria-label="Drag to reorder category"
+          className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-10 h-11 text-gray-300 hover:text-med-blue transition-colors"
         >
           <Grips className="w-4 h-4" />
         </div>
@@ -88,6 +94,7 @@ const SortableCategorySection: React.FC<{
               category === 'Baby Clothes' ? 'bg-med-orange/10 text-med-orange' :
               category === 'Adult Apparel' ? 'bg-med-azure/10 text-med-azure' :
               category === 'Beach Gear' ? 'bg-med-yellow/10 text-med-yellow' :
+              category === 'Toiletries' ? 'bg-purple-500/10 text-purple-500' :
               'bg-med-blue/10 text-med-blue'
             }`}>
               {getCategoryImage(category)}
@@ -164,37 +171,52 @@ const DroppableContainer: React.FC<{
   );
 };
 
-const EditableItemText: React.FC<{ 
-  text: string; 
-  isPacked: boolean; 
-  onSave: (newText: string) => void 
+const EditableItemText: React.FC<{
+  text: string;
+  isPacked: boolean;
+  onSave: (newText: string) => void;
 }> = ({ text, isPacked, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(text);
+
+  // Keep the local input value in sync with the (possibly-changed) text prop
+  // whenever we're not actively editing. Without this, a remote rename
+  // received after we last edited would leave stale text in the input the
+  // next time it opens.
+  useEffect(() => {
+    if (!isEditing) setValue(text);
+  }, [text, isEditing]);
+
+  const commit = () => {
+    setIsEditing(false);
+    const trimmed = value.trim();
+    if (trimmed && trimmed !== text) onSave(trimmed);
+    else setValue(text); // restore display value if user cleared or no change
+  };
+
+  const cancel = () => {
+    setIsEditing(false);
+    setValue(text);
+  };
 
   if (isEditing) {
     return (
       <input
         autoFocus
-        className="flex-1 text-sm font-bold bg-transparent border-b border-med-blue outline-none text-med-dark py-0"
+        className="flex-1 text-base font-bold bg-transparent border-b border-med-blue outline-none text-med-dark py-0"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        onBlur={() => {
-          setIsEditing(false);
-          onSave(value);
-        }}
+        onBlur={commit}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            setIsEditing(false);
-            onSave(value);
-          }
+          if (e.key === 'Enter') commit();
+          if (e.key === 'Escape') cancel();
         }}
       />
     );
   }
 
   return (
-    <span 
+    <span
       onClick={() => setIsEditing(true)}
       className={`flex-1 text-sm font-bold cursor-pointer transition-all ${
         isPacked ? 'text-gray-400 line-through' : 'text-med-dark hover:text-med-blue'
@@ -257,16 +279,43 @@ const SortablePackingItem: React.FC<{
           item.isPacked ? 'border-transparent bg-gray-50' : 'border-gray-50 shadow-sm'
         } ${isOverlay ? 'shadow-xl scale-105 border-med-blue' : ''}`}
       >
+        {/* Drag handle — finger-friendly hit area (44 px tall, 36 px wide).
+            On touch the user long-presses (250 ms) here to start a reorder;
+            on desktop they just grab and drag with mouse. The visible icon
+            stays small so it doesn't dominate the row visually, but the
+            tappable surface around it is what counts. */}
         <div
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing p-1 text-gray-300 hover:text-med-blue transition-colors"
+          aria-label="Drag to reorder"
+          className="touch-none cursor-grab active:cursor-grabbing flex items-center justify-center w-9 h-11 -my-2 -ml-2 text-gray-300 hover:text-med-blue transition-colors"
         >
-          <Grips className="w-3.5 h-3.5" />
+          <Grips className="w-4 h-4" />
         </div>
 
         <button
-          onClick={() => toggleItem(item.id)}
+          onClick={(e) => {
+            // Burst a little confetti from the checkbox when newly packing
+            // an item — small, fast, brand-colored. Skip on un-pack.
+            if (!item.isPacked) {
+              const rect = e.currentTarget.getBoundingClientRect();
+              confetti({
+                particleCount: 60,
+                spread: 70,
+                startVelocity: 35,
+                gravity: 0.9,
+                scalar: 0.85,
+                ticks: 120,
+                origin: {
+                  x: (rect.left + rect.width / 2) / window.innerWidth,
+                  y: (rect.top + rect.height / 2) / window.innerHeight,
+                },
+                colors: ['#0077B6', '#FF595E', '#FFC42E', '#48BFE3', '#FFFFFF'],
+                disableForReducedMotion: true,
+              });
+            }
+            toggleItem(item.id);
+          }}
           className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
             item.isPacked
               ? 'bg-med-blue text-white shadow-lg shadow-med-blue/30'
@@ -290,15 +339,44 @@ export const PackingTab = () => {
   const trip = useTripState();
 
   // Items = bundled defaults + user-added custom items, MINUS anything the
-  // user swiped to delete (tracked in trip.hiddenIds).
+  // user swiped to delete (tracked in trip.hiddenIds). On top we apply:
+  //   - categoryOverrides: cross-category drag results
+  //   - nameOverrides:     renames on bundled items
+  //   - packingOrder:      user's drag-to-reorder ordering
+  // Items not present in packingOrder fall back to their default position
+  // (appended after ordered items).
   const items = useMemo<PackingItem[]>(() => {
     const base = [...INITIAL_PACKING_LIST, ...trip.customPacking];
     const packed = new Set(trip.packedIds);
     const hidden = new Set(trip.hiddenIds);
-    return base
+    const catOverrides = trip.categoryOverrides ?? {};
+    const nameOverrides = trip.nameOverrides ?? {};
+
+    const visible = base
       .filter((it) => !hidden.has(it.id))
-      .map((it) => ({ ...it, isPacked: packed.has(it.id) }));
-  }, [trip.packedIds, trip.customPacking, trip.hiddenIds]);
+      .map((it) => ({
+        ...it,
+        category: (catOverrides[it.id] as PackingCategory) ?? it.category,
+        name: nameOverrides[it.id] ?? it.name,
+        isPacked: packed.has(it.id),
+      }));
+
+    const order = trip.packingOrder ?? [];
+    if (order.length === 0) return visible;
+    const rank = new Map<string, number>(order.map((id, i) => [id, i]));
+    return [...visible].sort((a, b) => {
+      const ar = rank.has(a.id) ? rank.get(a.id)! : Number.MAX_SAFE_INTEGER;
+      const br = rank.has(b.id) ? rank.get(b.id)! : Number.MAX_SAFE_INTEGER;
+      return ar - br;
+    });
+  }, [
+    trip.packedIds,
+    trip.customPacking,
+    trip.hiddenIds,
+    trip.categoryOverrides,
+    trip.nameOverrides,
+    trip.packingOrder,
+  ]);
 
   // Last deleted snapshot — drives the "Undo" toast. Cleared after a few seconds.
   const [lastDeleted, setLastDeleted] = useState<{
@@ -314,14 +392,32 @@ export const PackingTab = () => {
     return () => clearTimeout(id);
   }, [lastDeleted]);
 
-  // Drag-to-reorder ordering is device-local (presentation only) — not synced
-  // to Firestore. We accept any reorder operation by no-op'ing it for now;
-  // a proper implementation would store a sortOrder field per item.
-  const setItems = (_next: PackingItem[] | ((prev: PackingItem[]) => PackingItem[])) => {
-    /* intentionally no-op until per-item sort order is synced */
+  // Drag-to-reorder PERSISTS now via trip.packingOrder. Each call also
+  // detects cross-category moves (items whose category differs from their
+  // canonical default) and writes those to trip.categoryOverrides so
+  // bundled items can be moved across categories without mutating the
+  // hardcoded INITIAL_PACKING_LIST.
+  const setItems = (next: PackingItem[] | ((prev: PackingItem[]) => PackingItem[])) => {
+    const newList = typeof next === 'function' ? (next as (p: PackingItem[]) => PackingItem[])(items) : next;
+    // Snapshot the new order
+    trip.setPackingOrder(newList.map((i) => i.id));
+    // Detect any category changes vs the item's canonical category
+    const newCatOverrides: Record<string, PackingCategory> = { ...(trip.categoryOverrides ?? {}) };
+    for (const it of newList) {
+      const bundled = INITIAL_PACKING_LIST.find((b) => b.id === it.id);
+      const custom = trip.customPacking.find((c) => c.id === it.id);
+      const canonicalCat = (bundled || custom)?.category;
+      if (canonicalCat && it.category !== canonicalCat) {
+        newCatOverrides[it.id] = it.category;
+      } else if (canonicalCat && it.category === canonicalCat) {
+        // Item moved back to its canonical category — drop the override
+        delete newCatOverrides[it.id];
+      }
+    }
+    trip.writeCategoryOverrides(newCatOverrides);
   };
 
-  const [categories, setCategories] = useState<PackingCategory[]>(['Family Essentials', 'Baby Clothes', 'Adult Apparel', 'Beach Gear', 'Electronics']);
+  const [categories, setCategories] = useState<PackingCategory[]>(['Family Essentials', 'Baby Clothes', 'Adult Apparel', 'Beach Gear', 'Toiletries', 'Electronics']);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<'Section' | 'Item' | null>(null);
   const [newItemName, setNewItemName] = useState('');
@@ -329,15 +425,24 @@ export const PackingTab = () => {
   const [isExpanding, setIsExpanding] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
+  // Sensor configuration:
+  // - MouseSensor with distance constraint → desktop drag activates after 8px
+  //   of movement, so accidental clicks don't trigger a drag.
+  // - TouchSensor with delay + tolerance → mobile requires a 250 ms long-
+  //   press to start dragging. This is critical: without the delay, every
+  //   vertical scroll that starts on the drag handle would be misread as a
+  //   drag attempt. The 5 px tolerance lets the user wiggle slightly during
+  //   the long-press without canceling it.
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
+    useSensor(MouseSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 5 },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   const toggleCategory = (category: string) => {
@@ -358,9 +463,14 @@ export const PackingTab = () => {
   };
 
   const updateItemName = (id: string, newName: string) => {
-    // Renames are only allowed on user-added (custom) items.
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    // Custom items: rewrite their name in customPacking.
+    // Bundled items: stash a name override (we can't mutate INITIAL_PACKING_LIST).
     if (trip.customPacking.some((i) => i.id === id)) {
-      trip.renameCustomItem(id, newName);
+      trip.renameCustomItem(id, trimmed);
+    } else {
+      trip.setNameOverride(id, trimmed);
     }
   };
 
@@ -378,6 +488,9 @@ export const PackingTab = () => {
 
     trip.addCustomItem(newItem);
     setNewItemName('');
+    // Collapse the Quick Add form so the user sees the item land in the list
+    // instead of being stuck on the form ready to add another.
+    setIsExpanding(false);
   };
 
   const deleteItem = (id: string) => {
@@ -425,6 +538,7 @@ export const PackingTab = () => {
       case 'Baby Clothes': return <Shirt className="w-5 h-5" />;
       case 'Adult Apparel': return <ShoppingBag className="w-5 h-5" />;
       case 'Beach Gear': return <Wind className="w-5 h-5" />;
+      case 'Toiletries': return <Bath className="w-5 h-5" />;
       case 'Electronics': return <Zap className="w-5 h-5" />;
       default: return <ShoppingBag className="w-5 h-5" />;
     }
@@ -435,41 +549,12 @@ export const PackingTab = () => {
     setActiveType(event.active.data.current?.type);
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    if (!over) return;
-    if (activeType === 'Section') return;
-
-    const activeId = active.id;
-    const overId = over.id;
-
-    if (activeId === overId) return;
-
-    const activeItem = items.find((i) => i.id === activeId);
-    if (!activeItem) return;
-
-    const isOverAContainer = String(overId).startsWith('category-');
-    let overCategory: PackingCategory | null = null;
-    
-    if (isOverAContainer) {
-      overCategory = (over.data.current as any).category;
-    } else {
-      const overItem = items.find((i) => i.id === overId);
-      if (overItem) overCategory = overItem.category;
-    }
-
-    if (overCategory && activeItem.category !== overCategory) {
-      setItems((prevItems) => {
-        const oldIndex = prevItems.findIndex((i) => i.id === activeId);
-        const newIndex = isOverAContainer 
-          ? prevItems.length 
-          : prevItems.findIndex((i) => i.id === overId);
-
-        const newItems = [...prevItems];
-        newItems[oldIndex] = { ...activeItem, category: overCategory! };
-        return arrayMove(newItems, oldIndex, newIndex);
-      });
-    }
+  // No-op during drag — persistence happens on drop in handleDragEnd, so we
+  // don't fire Firestore writes on every drag-over event. Within-category
+  // visual shifting is handled by @dnd-kit's SortableContext via CSS
+  // transforms, so we don't need state updates for that to look right.
+  const handleDragOver = (_event: DragOverEvent) => {
+    /* persistence happens on drop, not during drag */
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -580,27 +665,27 @@ export const PackingTab = () => {
                   </button>
                 </div>
 
-                <input 
+                <input
                   autoFocus
-                  type="text" 
+                  type="text"
                   value={newItemName}
                   onChange={(e) => setNewItemName(e.target.value)}
                   placeholder="What are we forgetting?"
-                  className="w-full bg-transparent text-white text-xl font-black placeholder:text-white/20 focus:outline-none border-b border-white/10 pb-3"
+                  className="w-full bg-transparent text-white text-xl font-black placeholder:text-white/55 focus:outline-none border-b border-white/30 pb-3"
                 />
 
                 <div className="space-y-3">
-                  <p className="text-[9px] font-black text-white/40 uppercase tracking-widest">Select Category</p>
+                  <p className="text-[10px] font-black text-white/80 uppercase tracking-widest">Select Category</p>
                   <div className="flex flex-wrap gap-1.5">
                     {categories.map(cat => (
                       <button
                         key={cat}
                         type="button"
                         onClick={() => setNewItemCategory(cat)}
-                        className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
-                          newItemCategory === cat 
-                          ? 'bg-med-yellow text-med-dark shadow-lg shadow-med-yellow/20' 
-                          : 'bg-white/10 text-white/60 hover:bg-white/20'
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                          newItemCategory === cat
+                          ? 'bg-med-yellow text-med-dark shadow-lg shadow-med-yellow/20'
+                          : 'bg-white/15 text-white hover:bg-white/25'
                         }`}
                       >
                         {cat}
@@ -692,19 +777,44 @@ export const PackingTab = () => {
         </div>
 
         <div className="grid gap-4">
-          {DAILY_OUTFIT_RECOMMENDATIONS.map((outfit, i) => (
-            <div key={i} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h4 className="text-sm font-black text-med-dark uppercase leading-none">{outfit.date} • {outfit.activity}</h4>
-                  <p className="text-[10px] font-bold text-med-blue uppercase tracking-widest mt-1">{outfit.weather}</p>
+          {DAILY_OUTFIT_RECOMMENDATIONS.map((outfit, i) => {
+            // Split each recommendation into "adults" + "Cameron" so the
+            // baby-specific guidance reads as its own paragraph and isn't
+            // hidden mid-sentence in a wall of text.
+            const camIdx = outfit.recommendation.indexOf('For Cameron:');
+            const adultText =
+              camIdx === -1
+                ? outfit.recommendation
+                : outfit.recommendation.slice(0, camIdx).trim();
+            const camText =
+              camIdx === -1
+                ? null
+                : outfit.recommendation.slice(camIdx + 'For Cameron:'.length).trim();
+
+            return (
+              <div key={i} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 className="text-sm font-black text-med-dark uppercase leading-none">{outfit.date} • {outfit.activity}</h4>
+                    <p className="text-[10px] font-bold text-med-blue uppercase tracking-widest mt-1">{outfit.weather}</p>
+                  </div>
                 </div>
+
+                <div className="text-xs text-gray-600 leading-relaxed font-medium italic skimmable-markdown">
+                  <ReactMarkdown>{adultText}</ReactMarkdown>
+                </div>
+
+                {camText && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <p className="text-[9px] font-black text-med-coral uppercase tracking-widest mb-1.5">For Cameron</p>
+                    <div className="text-xs text-gray-600 leading-relaxed font-medium italic skimmable-markdown">
+                      <ReactMarkdown>{camText}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="text-xs text-gray-600 leading-relaxed font-medium italic skimmable-markdown">
-                <ReactMarkdown>{outfit.recommendation}</ReactMarkdown>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

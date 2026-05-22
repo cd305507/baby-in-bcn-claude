@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { openExternal } from "../lib/openExternal";
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Filter, MapPin, Star, Navigation, Baby, ExternalLink, CheckCircle2, Info, Ticket, X, Calendar, Trophy, Sparkles } from 'lucide-react';
 import { PLACES_DATA } from '../data/places';
@@ -72,7 +73,7 @@ const TicketInfoModal: React.FC<{
                         {section.links.map((link, i) => (
                           <button
                             key={i}
-                            onClick={() => window.open(link.url, '_blank')}
+                            onClick={() => openExternal(link.url)}
                             className="flex items-center justify-between gap-3 p-3 bg-white border border-gray-100 rounded-2xl hover:border-med-coral hover:bg-coral-50/30 transition-all group"
                           >
                             <span className="text-[10px] font-black text-med-dark uppercase tracking-tight">{link.label}</span>
@@ -90,7 +91,7 @@ const TicketInfoModal: React.FC<{
             <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex flex-col gap-3">
               {ticket.bookingUrl && (
                 <button
-                  onClick={() => window.open(ticket.bookingUrl, '_blank')}
+                  onClick={() => openExternal(ticket.bookingUrl)}
                   className="w-full py-4 bg-med-coral text-white rounded-3xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-med-coral/10 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                   <ExternalLink className="w-4 h-4" />
@@ -248,10 +249,11 @@ export const ExplorerTab = () => {
             <motion.div
               layout
               key={place.id}
+              id={`place-${place.id}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-50 flex flex-col group"
+              className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-50 flex flex-col group scroll-mt-20"
             >
               {/* Image Header */}
               <div className="relative h-64 overflow-hidden bg-gray-100">
@@ -308,7 +310,7 @@ export const ExplorerTab = () => {
                 <div className="absolute bottom-4 left-6 right-6 flex items-end justify-between">
                   <div className="flex-1 min-w-0">
                     <h3 
-                      onClick={() => window.open(place.mapsUrl, '_blank')}
+                      onClick={() => openExternal(place.mapsUrl)}
                       className="text-3xl font-black text-white leading-tight drop-shadow-md truncate cursor-pointer hover:text-med-blue transition-colors flex items-center gap-2"
                     >
                       {place.name}
@@ -388,7 +390,7 @@ export const ExplorerTab = () => {
                 {/* Actions */}
                 <div className="flex gap-3">
                   <button 
-                    onClick={() => window.open(place.mapsUrl, '_blank')}
+                    onClick={() => openExternal(place.mapsUrl)}
                     className="flex-1 bg-med-blue text-white rounded-2xl py-4 flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest shadow-lg shadow-med-blue/20 hover:scale-[1.02] active:scale-95 transition-all"
                   >
                     <Navigation className="w-4 h-4" />

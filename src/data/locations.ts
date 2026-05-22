@@ -11,6 +11,7 @@ export const LOCATION_COORDINATES: Record<string, { lat: number; lng: number }> 
   "Doors Close": { lat: 38.9531, lng: -77.4565 },
   "UA 992 Departure": { lat: 38.9531, lng: -77.4565 }, // IAD
   "Land at BCN Terminal 1": { lat: 41.2882, lng: 2.0731 },
+  "Meet Welcome Pickups Driver": { lat: 41.2882, lng: 2.0731 },
   "Stay U-nique Apartments Pau Claris": { lat: 41.3919, lng: 2.1671 },
   "Passeig de Gràcia Stroll": { lat: 41.3912, lng: 2.1649 },
   "Bar Mut Early Dinner": { lat: 41.3957, lng: 2.1614 },
@@ -20,7 +21,7 @@ export const LOCATION_COORDINATES: Record<string, { lat: number; lng: number }> 
   "Tapas 24 Dinner": { lat: 41.3894, lng: 2.1666 },
   "Park Güell": { lat: 41.4144, lng: 2.1527 },
   "Parc del Laberint d'Horta": { lat: 41.4395, lng: 2.1462 },
-  "Cervecería Catalana": { lat: 41.3924, lng: 2.1601 },
+  "Cervecería Catalana": { lat: 41.3934, lng: 2.1626 },
   "Sagrada Família": { lat: 41.4036, lng: 2.1744 },
   "Avinguda de Gaudí Lunch": { lat: 41.4055, lng: 2.1755 },
   "Mercat de Sant Antoni": { lat: 41.3785, lng: 2.1622 },
@@ -41,7 +42,7 @@ export const LOCATION_COORDINATES: Record<string, { lat: number; lng: number }> 
   "Telefèric de Montjuïc": { lat: 41.3700, lng: 2.1700 },
   "Montjuïc Castle & Gardens": { lat: 41.3633, lng: 2.1665 },
   "Restaurant Montjuïc": { lat: 41.3700, lng: 2.1730 },
-  "Final BCN Cervecería Catalana": { lat: 41.3924, lng: 2.1601 },
+  "Final BCN Cervecería Catalana": { lat: 41.3934, lng: 2.1626 },
   "BCN → Sitges Transfer": { lat: 41.2356, lng: 1.8080 },
   "InSitges Ribera's Beach": { lat: 41.2356, lng: 1.8080 },
   "Platja de Sant Sebastià": { lat: 41.2366, lng: 1.8155 },
@@ -59,6 +60,7 @@ export const LOCATION_COORDINATES: Record<string, { lat: number; lng: number }> 
 
   // --- Day 11 (Homeward Bound) — all per-step events share their airport coords ---
   "Cabify Departure (Sitges)": { lat: 41.2356, lng: 1.8080 },
+  "Pre-booked Car Departure (Sitges)": { lat: 41.2356, lng: 1.8080 },
   "BCN T1 Curbside Drop": { lat: 41.2882, lng: 2.0731 },
   "United Check-in & Bag Drop": { lat: 41.2882, lng: 2.0731 },
   "Security Screening": { lat: 41.2882, lng: 2.0731 },

@@ -1,7 +1,10 @@
 import React from 'react';
+import { openExternal } from "../lib/openExternal";
 import { motion, AnimatePresence } from 'motion/react';
 import { Clock, Navigation, ExternalLink, Ticket, ChevronLeft, ChevronRight, Calendar, Star, Map, X, Info, Sun, Cloud, CloudRain, CloudSun } from 'lucide-react';
 import { ITINERARY_DATA } from '../data/itinerary';
+import { BARCELONA_FORECAST, SITGES_FORECAST } from '../data/weather';
+import { useLiveForecast } from '../lib/weatherLive';
 import { TICKETS } from '../data/logistics';
 import { TimelineEvent, BabyMode, TicketInfo, WeatherForecastDay } from '../types';
 import { DailyMap, MapStop } from './DailyMap';
@@ -72,7 +75,7 @@ const TicketInfoModal: React.FC<{
                         {section.links.map((link, i) => (
                           <button
                             key={i}
-                            onClick={() => window.open(link.url, '_blank')}
+                            onClick={() => openExternal(link.url)}
                             className="flex items-center justify-between gap-3 p-3 bg-white border border-gray-100 rounded-2xl hover:border-med-coral hover:bg-coral-50/30 transition-all group"
                           >
                             <span className="text-[10px] font-black text-med-dark uppercase tracking-tight">{link.label}</span>
@@ -90,7 +93,7 @@ const TicketInfoModal: React.FC<{
             <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex flex-col gap-3">
               {ticket.bookingUrl && (
                 <button
-                  onClick={() => window.open(ticket.bookingUrl, '_blank')}
+                  onClick={() => openExternal(ticket.bookingUrl)}
                   className="w-full py-4 bg-med-coral text-white rounded-3xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-med-coral/10 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                   <ExternalLink className="w-4 h-4" />
@@ -126,6 +129,8 @@ const TransitIcon = ({ method }: { method: string }) => {
     case 'Bus': return '🚌';
     case 'Metro': return '🚇';
     case 'Cabify Kids': return '🚕';
+    case 'Family Car': return '🚗';
+    case 'Pre-booked Car': return '🚗';
     default: return '➡️';
   }
 };
@@ -226,7 +231,7 @@ const WeatherDetailModal: React.FC<{
               </div>
 
               <button 
-                onClick={() => window.open(day.accuweatherUrl, '_blank')}
+                onClick={() => openExternal(day.accuweatherUrl)}
                 className="w-full py-4 bg-med-dark text-white rounded-3xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 Full AccuWeather Details
@@ -245,39 +250,64 @@ const DailyMapModal: React.FC<{
   onClose: () => void;
   currentDay: any;
   currentDayIndex: number;
-}> = ({ isOpen, onClose, currentDay, currentDayIndex }) => {
+  setCurrentDayIndex: (i: number) => void;
+}> = ({ isOpen, onClose, currentDay, currentDayIndex, setCurrentDayIndex }) => {
+  const hasPrev = currentDayIndex > 0;
+  const hasNext = currentDayIndex < ITINERARY_DATA.length - 1;
+
   return (
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
             className="absolute inset-0 bg-med-dark/90 backdrop-blur-xl"
           />
-          
-          <motion.div 
+
+          <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-[2rem] overflow-hidden shadow-2xl flex flex-col"
           >
-            <div className="px-6 py-4 bg-med-blue flex items-center justify-between">
-              <div className="flex items-center gap-3 text-white">
-                <Map className="w-5 h-5 text-med-yellow" />
-                <div>
-                  <h3 className="font-black text-sm uppercase tracking-wider">Day {currentDay.dayNumber} Route</h3>
-                  <p className="text-white/60 text-[10px] font-bold uppercase">{currentDay.date}</p>
+            <div className="px-4 py-4 bg-med-blue flex items-center justify-between gap-3">
+              <button
+                onClick={() => hasPrev && setCurrentDayIndex(currentDayIndex - 1)}
+                disabled={!hasPrev}
+                aria-label="Previous day"
+                className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white disabled:opacity-30 disabled:hover:bg-white/10 active:scale-90 shrink-0"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-3 text-white min-w-0">
+                <Map className="w-5 h-5 text-med-yellow shrink-0" />
+                <div className="min-w-0 text-center">
+                  <h3 className="font-black text-sm uppercase tracking-wider truncate">Day {currentDay.dayNumber} Route</h3>
+                  <p className="text-white/60 text-[10px] font-bold uppercase truncate">{currentDay.date}</p>
                 </div>
               </div>
-              <button 
-                onClick={onClose}
-                className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => hasNext && setCurrentDayIndex(currentDayIndex + 1)}
+                  disabled={!hasNext}
+                  aria-label="Next day"
+                  className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white disabled:opacity-30 disabled:hover:bg-white/10 active:scale-90"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={onClose}
+                  aria-label="Close"
+                  className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white active:scale-90"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
             
             <div className="flex-1 min-h-[400px]">
@@ -286,15 +316,16 @@ const DailyMapModal: React.FC<{
                 const hotelName = isSitges ? "InSitges Ribera's Beach" : "Stay U-nique Apartments Pau Claris";
                 const hotelCoords = LOCATION_COORDINATES[hotelName];
 
-                const getTransportType = (method: string): 'Driving' | 'Walking' | 'Transit' => {
+                const getTransportType = (method: string): 'Driving' | 'Walking' | 'Bus' | 'Metro' => {
                   const m = method.toLowerCase();
-                  if (m.includes('cabify') || m.includes('driving')) return 'Driving';
-                  if (m.includes('metro') || m.includes('bus') || m.includes('train')) return 'Transit';
+                  if (m.includes('cabify') || m.includes('driving') || m.includes('car')) return 'Driving';
+                  if (m.includes('metro') || m.includes('train')) return 'Metro';
+                  if (m.includes('bus')) return 'Bus';
                   return 'Walking';
                 };
 
                 /** Pick the recommended transit option (or first), parse "(45 min)" out of its details. */
-                const summarizeTransit = (transit: any | undefined): { type: 'Driving' | 'Walking' | 'Transit'; minutes?: number } | null => {
+                const summarizeTransit = (transit: any | undefined): { type: 'Driving' | 'Walking' | 'Bus' | 'Metro'; minutes?: number } | null => {
                   if (!transit?.options?.length) return null;
                   const opt = transit.options.find((o: any) => o.isRecommended) || transit.options[0];
                   const match = (opt.details || '').match(/(\d+)\s*min/i);
@@ -349,6 +380,7 @@ const DailyMapModal: React.FC<{
                     transport_to_next: legSummary?.type || 'Walking',
                     transit_minutes: legSummary?.minutes,
                     transit_info: legTransit,
+                    mapsUrl: event.mapsUrl,
                   };
                 });
 
@@ -366,6 +398,9 @@ const DailyMapModal: React.FC<{
 
                 if (prependHotel) {
                   const firstLeg = summarizeTransit(firstEvent?.transit);
+                  const hotelMapsUrl = isSitges
+                    ? 'https://www.google.com/maps/search/?api=1&query=InSitges+Ribera+41+Passeig+de+la+Ribera+Sitges'
+                    : 'https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+Barcelona';
                   finalStops.push({
                     lat: hotelCoords.lat,
                     lng: hotelCoords.lng,
@@ -376,6 +411,7 @@ const DailyMapModal: React.FC<{
                     transport_to_next: firstLeg?.type || 'Walking',
                     transit_minutes: firstLeg?.minutes,
                     transit_info: firstEvent?.transit,
+                    mapsUrl: hotelMapsUrl,
                   });
                   hotelStopIndex = 0;
                 }
@@ -387,9 +423,19 @@ const DailyMapModal: React.FC<{
                 //  2. Hotel dedup — any non-consecutive event at hotel coords is skipped
                 //     (so "Back Home" doesn't add a duplicate marker).
                 eventStops.forEach((stop, idx) => {
-                  const isAtHotel =
-                    stop.place_type === 'hotel' ||
-                    (hotelCoords && stop.lat === hotelCoords.lat && stop.lng === hotelCoords.lng);
+                  // CRITICAL: "isAtHotel" must require coords matching the
+                  // prepended-hotel coords. Don't trust `place_type === 'hotel'`
+                  // alone — events like "Home Sweet Home" (your home in
+                  // Alexandria) get the 'hotel' place_type because the
+                  // location string contains "home", but they're NOT the
+                  // Spanish hotel and shouldn't get deduped into it. That
+                  // mis-dedup is what drew a "45m drive" closing-loop line
+                  // from IAD back to Sitges, across the Atlantic.
+                  const isAtHotel = !!(
+                    hotelCoords &&
+                    stop.lat === hotelCoords.lat &&
+                    stop.lng === hotelCoords.lng
+                  );
 
                   const prev = finalStops[finalStops.length - 1];
                   const sharesCoordsWithPrev =
@@ -438,6 +484,11 @@ const DailyMapModal: React.FC<{
 
 export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, onStickyChange }: ItineraryTabProps) => {
   const currentDay = ITINERARY_DATA[currentDayIndex];
+  // Live weather — fall back to the static event.weatherDetail if the API
+  // hasn't responded or this day isn't in the live forecast window.
+  const { full: liveFullForecast } = useLiveForecast(BARCELONA_FORECAST, SITGES_FORECAST);
+  const liveWeatherForDay = liveFullForecast.find((w) => w.tripDay === currentDay.dayNumber)
+    || currentDay.weatherDetail;
   const [showSticky, setShowSticky] = React.useState(false);
   const [isMapOpen, setIsMapOpen] = React.useState(false);
   const [selectedTicket, setSelectedTicket] = React.useState<TicketInfo | null>(null);
@@ -482,12 +533,32 @@ export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, 
 
   const openInMaps = (address: string) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
-    window.open(url, '_blank');
+    openExternal(url);
   };
 
-  const openRouteInMaps = (from: string, to: string) => {
-    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(from)}&destination=${encodeURIComponent(to)}&travelmode=transit`;
-    window.open(url, '_blank');
+  // Pull the `query=...` string out of a canonical mapsUrl so we can reuse
+  // those clean "Name City" identifiers as Google Maps directions endpoints.
+  const queryFromMapsUrl = (mapsUrl: string | undefined): string | null => {
+    if (!mapsUrl) return null;
+    const m = mapsUrl.match(/[?&]query=([^&]+)/);
+    return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : null;
+  };
+
+  // Open the Google Maps DIRECTIONS view for a leg. Prefer the previous +
+  // current events' canonical mapsUrl queries (which include city, e.g.
+  // "Sagrada Familia Barcelona") so the route resolves to the right places.
+  // Fall back to the raw transit.from / transit.to strings only when
+  // mapsUrls aren't available.
+  const openRouteInMaps = (
+    fromLabel: string,
+    toLabel: string,
+    fromMapsUrl?: string,
+    toMapsUrl?: string,
+  ) => {
+    const origin = queryFromMapsUrl(fromMapsUrl) || fromLabel;
+    const destination = queryFromMapsUrl(toMapsUrl) || toLabel;
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=transit`;
+    openExternal(url);
   };
 
   return (
@@ -570,10 +641,14 @@ export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, 
         </h2>
         <div className="flex items-center justify-center gap-2 mt-4">
           <button
-            onClick={() => currentDay.weatherDetail && setSelectedWeatherDay(currentDay.weatherDetail)}
+            onClick={() => liveWeatherForDay && setSelectedWeatherDay(liveWeatherForDay)}
             className="inline-flex items-center justify-center gap-2 px-4 py-1.5 bg-white rounded-full shadow-sm border border-gray-100 hover:bg-gray-50 active:scale-95 transition-all"
           >
-            <p className="text-[11px] font-black text-med-dark leading-none whitespace-nowrap">{currentDay.weather}</p>
+            <p className="text-[11px] font-black text-med-dark leading-none whitespace-nowrap">
+              {liveWeatherForDay
+                ? `${liveWeatherForDay.high.replace('°', '')}°/${liveWeatherForDay.low} · ${liveWeatherForDay.conditions}`
+                : currentDay.weather}
+            </p>
           </button>
           <button 
             onClick={() => setIsMapOpen(true)}
@@ -607,8 +682,60 @@ export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, 
                         )}
                       </div>
                     </div>
-                    <button 
-                      onClick={() => openRouteInMaps(event.transit!.from, event.transit!.to)}
+                    <button
+                      onClick={() => {
+                        // Resolve origin / destination from canonical mapsUrls.
+                        //
+                        // Three patterns to handle:
+                        // (A) Departure transit: this event's transit
+                        //     describes a leg FROM this event TO somewhere
+                        //     else. Includes Day 0 "Depart Alexandria",
+                        //     Day 11 "Pre-booked Car Departure", and Day 11
+                        //     "Meet Parents at IAD" (which describes the
+                        //     drive to Alexandria home). Detected by
+                        //     transit.to NOT matching the current event's
+                        //     location/address.
+                        // (B) First-event arrival (Days 2-10): transit
+                        //     describes hotel → this event. Origin is the
+                        //     hotel.
+                        // (C) Standard mid-day arrival: leg ends at this
+                        //     event. Origin is the previous event.
+                        const transitTo = event.transit!.to;
+                        const arrivesHere = !!(
+                          (event.address &&
+                            (event.address.includes(transitTo) ||
+                              transitTo.includes(event.address))) ||
+                          (event.location.includes(transitTo) ||
+                            transitTo.includes(event.location))
+                        );
+                        const isDeparture = !arrivesHere;
+
+                        const isSitgesDay = currentDayIndex >= 8;
+                        const hotelMapsUrl = isSitgesDay
+                          ? 'https://www.google.com/maps/search/?api=1&query=InSitges+Ribera+41+Passeig+de+la+Ribera+Sitges'
+                          : 'https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+Barcelona';
+
+                        let fromMapsUrl: string | undefined;
+                        let toMapsUrl: string | undefined;
+
+                        if (isDeparture) {
+                          fromMapsUrl = event.mapsUrl;
+                          toMapsUrl = currentDay.events[index + 1]?.mapsUrl;
+                        } else if (index === 0) {
+                          fromMapsUrl = hotelMapsUrl;
+                          toMapsUrl = event.mapsUrl;
+                        } else {
+                          fromMapsUrl = currentDay.events[index - 1]?.mapsUrl;
+                          toMapsUrl = event.mapsUrl;
+                        }
+
+                        openRouteInMaps(
+                          event.transit!.from,
+                          event.transit!.to,
+                          fromMapsUrl,
+                          toMapsUrl,
+                        );
+                      }}
                       className="p-2 bg-white rounded-xl shadow-sm border border-gray-100 text-med-blue hover:scale-110"
                     >
                       <Navigation className="w-4 h-4" />
@@ -636,7 +763,7 @@ export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, 
                       return (
                         <div 
                           key={i} 
-                          onClick={() => opt.bookingUrl && window.open(opt.bookingUrl, '_blank')}
+                          onClick={() => opt.bookingUrl && openExternal(opt.bookingUrl)}
                           className={`${baseClasses} ${appearanceClasses}`}
                         >
                           <span className="text-base">{TransitIcon({ method: opt.method })}</span>
@@ -714,7 +841,7 @@ export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, 
                 <div className="text-left">
                   {event.mapsUrl ? (
                     <div 
-                      onClick={() => window.open(event.mapsUrl, '_blank')}
+                      onClick={() => openExternal(event.mapsUrl)}
                       className="group/title block cursor-pointer"
                     >
                       <h3 className="text-2xl font-black leading-tight mb-1 text-med-dark group-hover/title:text-med-blue transition-colors flex items-center gap-2">
@@ -726,7 +853,7 @@ export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, 
                     <h3 className="text-2xl font-black leading-tight mb-1 text-med-dark">{event.location}</h3>
                   )}
                   <button 
-                    onClick={() => event.mapsUrl ? window.open(event.mapsUrl, '_blank') : openInMaps(event.address)} 
+                    onClick={() => event.mapsUrl ? openExternal(event.mapsUrl) : openInMaps(event.address)} 
                     className="flex items-center justify-start gap-1 text-med-azure text-[10px] font-black uppercase tracking-wider w-full text-left"
                   >
                     <Navigation className="w-3 h-3 flex-shrink-0" /> {event.address}
@@ -784,11 +911,12 @@ export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, 
         ))}
       </div>
 
-      <DailyMapModal 
-        isOpen={isMapOpen} 
-        onClose={() => setIsMapOpen(false)} 
+      <DailyMapModal
+        isOpen={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
         currentDay={currentDay}
         currentDayIndex={currentDayIndex}
+        setCurrentDayIndex={setCurrentDayIndex}
       />
 
       <WeatherDetailModal 

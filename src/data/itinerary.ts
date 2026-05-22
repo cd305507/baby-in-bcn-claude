@@ -14,18 +14,19 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "2:40 PM",
         location: "Depart Alexandria",
         address: "618 South Royal Street Alexandria, VA 22314",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=618+South+Royal+Street+Alexandria+VA+22314",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=618+South+Royal+Street+Alexandria+VA",
+
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
           from: "618 South Royal Street Alexandria, VA 22314",
           to: "IAD",
           options: [
-            { method: "Cabify Kids", details: "⭐ Private Car (~50 min in Saturday traffic)", isRecommended: true, bookingUrl: "cabify://cabify/" },
+            { method: "Family Car", details: "⭐ Mom & Dad driving (~50 min)", isRecommended: true },
             { method: "Metro", details: "Silver Line to Dulles (75 min)" },
             { method: "Walking", details: "N/A" }
           ],
-          insight: "💡 Allow ~50 mins for Saturday traffic and parking/drop-off.",
+          insight: "💡 Allow ~50 mins door-to-curbside including drop-off.",
           departureTime: "2:40 PM"
         },
         vibe: "Departure Ritual",
@@ -38,6 +39,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         location: "Arrival at IAD",
         address: "Dulles International Airport, Sterling, VA",
         mapsUrl: "https://www.google.com/maps/search/?api=1&query=Dulles+International+Airport",
+
         babyMode: "Routine",
         gear: "Stroller",
         vibe: "The 3-Hour Rule",
@@ -49,7 +51,8 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "3:45 PM",
         location: "Bag Drop & Passports",
         address: "United International Check-in, IAD",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=United+International+Check-in+Dulles",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Dulles+International+Airport",
+
         babyMode: "Routine",
         gear: "Stroller",
         vibe: "Document Checkpoint",
@@ -61,7 +64,8 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "4:20 PM",
         location: "TSA PreCheck",
         address: "IAD Main Security Checkpoint",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Dulles+IAD+TSA",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Dulles+International+Airport",
+
         babyMode: "Routine",
         gear: "Carrier",
         vibe: "Security Sprint",
@@ -73,7 +77,8 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "4:50 PM",
         location: "Concourse Trek (AeroTrain)",
         address: "IAD AeroTrain to C/D gates",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Dulles+AeroTrain",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Dulles+International+Airport",
+
         babyMode: "Routine",
         gear: "Stroller",
         vibe: "Long Hallway",
@@ -85,7 +90,8 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "5:25 PM",
         location: "Gate Tag Check",
         address: "UA 992 Gate, IAD",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Dulles+International+Airport+Gate+C",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Dulles+International+Airport",
+
         babyMode: "Routine",
         gear: "Stroller",
         vibe: "Last-Mile Logistics",
@@ -111,7 +117,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         babyMode: "Play",
         gear: "Stroller",
         vibe: "Maximize Floor Time",
-        placeEmoji: "🚶",
+        placeEmoji: "🚪",
         description: "Board at the last possible minute. Lets Cam stretch, crawl, and burn energy until doors close.",
         localsSecret: "Walk laps in the gate area — the rhythm helps wear him out so the takeoff feed-to-sleep actually takes."
       },
@@ -130,6 +136,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         location: "UA 992 Departure",
         address: "IAD → BCN",
         mapsUrl: "https://www.google.com/maps/search/?api=1&query=Dulles+International+Airport",
+
         babyMode: "Nap",
         gear: "N/A",
         vibe: "Wheels Up",
@@ -156,6 +163,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         location: "Land at BCN Terminal 1",
         address: "08820 El Prat de Llobregat, Barcelona",
         mapsUrl: "https://www.google.com/maps/search/?api=1&query=Barcelona+Airport+Terminal+1",
+
         babyMode: "Routine",
         gear: "N/A",
         vibe: "Touchdown",
@@ -164,10 +172,22 @@ export const ITINERARY_DATA: DayItinerary[] = [
         localsSecret: "BCN Terminal 1 has a very clean family room with changing stations near the luggage carousels if you need to reset before the ride."
       },
       {
-        time: "9:30 AM",
+        time: "9:40 AM",
+        location: "Meet Welcome Pickups Driver",
+        address: "BCN Terminal 1 Arrivals Hall",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Barcelona+Airport+Terminal+1+Arrivals",
+        babyMode: "Routine",
+        gear: "Stroller",
+        vibe: "Curbside Hand-off",
+        placeEmoji: "🤝",
+        description: "Estimated time to find the driver after clearing EES + baggage. Driver will be holding a sign with our name in the arrivals hall.",
+        localsSecret: "Stop at the family room near the carousels for a quick diaper change and reset before the 35-min drive into Eixample."
+      },
+      {
+        time: "10:30 AM",
         location: "Stay U-nique Apartments Pau Claris",
         address: "Carrer de Pau Claris, 99, 08009 Barcelona",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+08009+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Barcelona",
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
@@ -182,11 +202,11 @@ export const ITINERARY_DATA: DayItinerary[] = [
         },
         vibe: "Home Base Alpha",
         placeEmoji: "🏠",
-        description: "Arrival at the apartment. Code 34713/2026. Crib & High Chair pre-set.",
+        description: "Estimated arrival and check-in. Code 34713/2026. Crib & High Chair pre-set. 10:30 AM early check-in requested via Stay U-nique.",
         localsSecret: "There is a 24-hour pharmacy (Farmàcia 1896) one block away on Carrer d'Aragó for any baby supplies you might have forgotten.",
         bookingDetails: {
           confirmationCode: "34713/2026",
-          checkIn: "Ready by 9:30 AM (Requested)",
+          checkIn: "Ready by 10:30 AM (Requested)",
           notes: "3BR w/ Balcony."
         }
       },
@@ -194,7 +214,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "11:30 AM",
         location: "Passeig de Gràcia Stroll",
         address: "Passeig de Gràcia, Barcelona",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Passeig+de+Gràcia+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Passeig+de+Gracia+Barcelona",
         babyMode: "Nap",
         gear: "Stroller",
         transit: {
@@ -232,7 +252,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "7:00 PM",
         location: "Back Home",
         address: "Carrer de Pau Claris, 99",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Carrer+de+Pau+Claris+99+08009+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+Barcelona",
         babyMode: "Routine",
         gear: "N/A",
         transit: {
@@ -260,7 +280,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "10:00 AM",
         location: "Parc de la Ciutadella",
         address: "Passeig de Picasso, 21",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Ciutadella+Park+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Parc+de+la+Ciutadella+Barcelona",
         babyMode: "Play",
         gear: "Stroller",
         transit: {
@@ -284,7 +304,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "12:30 PM",
         location: "Boqueria Market",
         address: "La Rambla, 91",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Mercado+de+La+Boqueria",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Mercat+de+Sant+Josep+de+la+Boqueria+Barcelona",
         babyMode: "Routine",
         gear: "Carrier",
         transit: {
@@ -317,7 +337,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
           options: [{ method: "Walking", details: "🚶 Walk up La Rambla (10 min)", isRecommended: true }],
         },
         vibe: "City Rhythm",
-        placeEmoji: "🚶",
+        placeEmoji: "💤",
         description: "Walk home via the beautiful Rambla de Catalunya while baby naps.",
         localsSecret: "Rambla de Catalunya has a central pedestrian promenade with plenty of shade and smooth paving—much better for a sleeping baby than the bumpy Gothic Quarter."
       },
@@ -345,7 +365,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "7:00 PM",
         location: "Back Home",
         address: "Carrer de Pau Claris, 99",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Carrer+de+Pau+Claris+99+08009+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+Barcelona",
         babyMode: "Routine",
         gear: "N/A",
         transit: {
@@ -373,7 +393,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "10:30 AM",
         location: "Park Güell",
         address: "08024 Barcelona",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Park+Güell",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Park+Guell+Barcelona",
         babyMode: "Routine",
         gear: "Carrier",
         transit: {
@@ -398,7 +418,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "2:00 PM",
         location: "Parc del Laberint d'Horta",
         address: "Passeig dels Castanyers, 1",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Parc+del+Laberint+d'Horta",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Parc+del+Laberint+d%27Horta+Barcelona",
         babyMode: "Nap",
         gear: "Stroller",
         vibe: "Hidden Oasis",
@@ -421,7 +441,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "5:30 PM",
         location: "Cervecería Catalana",
         address: "Carrer de Mallorca, 236",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Cervecería+Catalana",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Cerveceria+Catalana+Barcelona",
         rating: 4.5,
         reviewCount: 25182,
         recommendedDish: "Solomillo al foie (Sirloin with foie gras)",
@@ -445,7 +465,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "7:00 PM",
         location: "Back Home",
         address: "Carrer de Pau Claris, 99",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Carrer+de+Pau+Claris+99+08009+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+Barcelona",
         babyMode: "Routine",
         gear: "N/A",
         transit: {
@@ -477,7 +497,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "9:45 AM",
         location: "Sagrada Família",
         address: "Carrer de Mallorca, 401",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Sagrada+Familia+barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Sagrada+Familia+Barcelona",
         babyMode: "Routine",
         gear: "Carrier",
         transit: {
@@ -503,7 +523,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "12:30 PM",
         location: "Avinguda de Gaudí Lunch",
         address: "Avinguda de Gaudí",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Avinguda+de+Gaudí+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Avinguda+de+Gaudi+Barcelona",
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
@@ -545,7 +565,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "5:00 PM",
         location: "Bar Calders",
         address: "Carrer de Parlament, 25",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Bar+Calders",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Bar+Calders+Barcelona",
         rating: 4.3,
         reviewCount: 3654,
         recommendedDish: "Chips with Espinaler sauce & craft vermut",
@@ -565,7 +585,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "6:30 PM",
         location: "Back Home",
         address: "Carrer de Pau Claris, 99",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Carrer+de+Pau+Claris+99+08009+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+Barcelona",
         babyMode: "Routine",
         gear: "N/A",
         transit: {
@@ -598,7 +618,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "9:15 AM",
         location: "Casa Batlló",
         address: "Passeig de Gràcia, 43",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Casa+Batlló",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Casa+Batllo+Barcelona",
         babyMode: "Routine",
         gear: "Carrier",
         transit: {
@@ -618,7 +638,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "12:00 PM",
         location: "Gràcia Lunch",
         address: "Gràcia neighborhood",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Gràcia+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Gracia+Barcelona",
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
@@ -640,7 +660,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "2:30 PM",
         location: "Casa Vicens",
         address: "Carrer de les Carolines, 20",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Casa+Vicens",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Casa+Vicens+Barcelona",
         babyMode: "Nap",
         gear: "Stroller",
         transit: {
@@ -663,7 +683,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "5:00 PM",
         location: "Pepa Tomate",
         address: "Plaça de la Revolució de Setembre de 1868, 17",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Pepa+Tomate",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Pepa+Tomate+Barcelona",
         rating: 4.2,
         reviewCount: 2481,
         recommendedDish: "Pepa Tomate bravas with unique green sauce",
@@ -683,7 +703,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "6:30 PM",
         location: "Back Home",
         address: "Carrer de Pau Claris, 99",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Carrer+de+Pau+Claris+99+08009+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+Barcelona",
         babyMode: "Routine",
         gear: "N/A",
         transit: {
@@ -715,7 +735,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "10:00 AM",
         location: "Barcelona Cathedral",
         address: "Pla de la Seu, s/n, 08002 Barcelona",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Barcelona+Cathedral",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Barcelona+Cathedral+Barcelona",
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
@@ -756,7 +776,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "10:45 AM",
         location: "Plaça de Sant Felip Neri",
         address: "Plaça de Sant Felip Neri, 5, 08002 Barcelona",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Pla%C3%A7a+de+Sant+Felip+Neri+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Placa+de+Sant+Felip+Neri+Barcelona",
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
@@ -773,7 +793,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "11:15 AM",
         location: "Plaça del Rei",
         address: "Plaça del Rei, 08002 Barcelona",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Pla%C3%A7a+del+Rei+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Placa+del+Rei+Barcelona",
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
@@ -791,7 +811,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "12:00 PM",
         location: "Plaça Reial",
         address: "Plaça Reial, 08002 Barcelona",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Pla%C3%A7a+Reial+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Placa+Reial+Barcelona",
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
@@ -811,7 +831,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "1:00 PM",
         location: "La Mar Salada Lunch",
         address: "Passeig de Joan de Borbó, 58",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=La+Mar+Salada",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=La+Mar+Salada+Barcelona",
         rating: 4.3,
         reviewCount: 3512,
         recommendedDish: "Arroz de Senyoret (Peeled seafood rice)",
@@ -854,7 +874,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "5:00 PM",
         location: "Bormuth",
         address: "Carrer del Rec, 31",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Bormuth",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Bormuth+Barcelona",
         rating: 4.4,
         reviewCount: 4621,
         recommendedDish: "Honeyed cod (Bacalao meloso) & extra crispy bravas",
@@ -878,7 +898,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "7:00 PM",
         location: "Back Home",
         address: "Carrer de Pau Claris, 99",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Carrer+de+Pau+Claris+99+08009+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+Barcelona",
         babyMode: "Routine",
         gear: "N/A",
         transit: {
@@ -909,7 +929,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "10:00 AM",
         location: "Telefèric de Montjuïc",
         address: "Avinguda de Miramar, 30",
-        mapsUrl: "https://maps.app.goo.gl/cd8fFPdP5jqRAtdHA",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Teleferic+de+Montjuic+Barcelona",
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
@@ -931,7 +951,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "11:30 AM",
         location: "Montjuïc Castle & Gardens",
         address: "Montjuïc, Barcelona",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Castell+de+Montjuïc",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Montjuic+Castle+%26+Gardens+Barcelona",
         babyMode: "Play",
         gear: "Stroller",
         transit: {
@@ -952,7 +972,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "1:30 PM",
         location: "Restaurant Montjuïc",
         address: "Montjuïc Mountain",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Montjuïc+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Restaurant+Montjuic+Barcelona",
         rating: 4.2,
         reviewCount: 4102,
         recommendedDish: "Arroz de gamba roja (Red prawn rice) with port views",
@@ -975,7 +995,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "5:00 PM",
         location: "Final BCN Cervecería Catalana",
         address: "Carrer de Mallorca, 236",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Cervecería+Catalana+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Final+BCN+Cerveceria+Catalana+Barcelona",
         rating: 4.5,
         reviewCount: 25182,
         recommendedDish: "The famous Solomillo al foie for a final tribute",
@@ -999,7 +1019,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "7:00 PM",
         location: "Back Home",
         address: "Carrer de Pau Claris, 99",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Carrer+de+Pau+Claris+99+08009+Barcelona",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+Barcelona",
         babyMode: "Routine",
         gear: "N/A",
         transit: {
@@ -1052,7 +1072,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "12:00 PM",
         location: "InSitges Ribera's Beach",
         address: "Passeig de la Ribera, 41, 08870 Sitges",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=InSitges+Ribera's+Beach+Passeig+de+la+Ribera+41+08870+Sitges",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=InSitges+Ribera%27s+Beach+Sitges",
         babyMode: "Routine",
         gear: "N/A",
         vibe: "Seafront Living",
@@ -1069,7 +1089,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "4:00 PM",
         location: "Platja de Sant Sebastià",
         address: "Sitges",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Platja+de+Sant+Sebastià+Sitges",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Platja+de+Sant+Sebastia+Sitges",
         babyMode: "Play",
         gear: "Stroller",
         transit: {
@@ -1107,7 +1127,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "7:30 PM",
         location: "Back Home",
         address: "Passeig de la Ribera, 41",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Passeig+de+la+Ribera+41+Sitges",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+Barcelona",
         babyMode: "Routine",
         gear: "N/A",
         transit: {
@@ -1189,7 +1209,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "5:30 PM",
         location: "Al Fresco Dinner",
         address: "Sitges Center",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Sitges+Center",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Sitges+Center+Spain",
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
@@ -1206,7 +1226,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "7:00 PM",
         location: "Back Home",
         address: "Passeig de la Ribera, 41",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Passeig+de+la+Ribera+41+Sitges",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+Barcelona",
         babyMode: "Routine",
         gear: "N/A",
         transit: {
@@ -1234,7 +1254,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "10:00 AM",
         location: "Platja d'Aiguadolç",
         address: "Sitges East",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Platja+d'Aiguadolç+Sitges",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Platja+d%27Aiguadolc+Sitges",
         babyMode: "Play",
         gear: "Stroller",
         transit: {
@@ -1255,7 +1275,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "12:00 PM",
         location: "Terramar Gardens",
         address: "Sitges West",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Jardins+de+Terramar+Sitges",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Terramar+Gardens+Sitges",
         babyMode: "Nap",
         gear: "Stroller",
         transit: {
@@ -1278,7 +1298,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "4:00 PM",
         location: "Maricel Museum",
         address: "Carrer del Fonollar, s/n",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Museu+de+Maricel+Sitges",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Maricel+Museum+Sitges",
         babyMode: "Routine",
         gear: "Carrier",
         transit: {
@@ -1299,7 +1319,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "6:30 PM",
         location: "Farewell Sitges Dinner",
         address: "Church Terrace",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Església+de+Sant+Bartomeu+i+Santa+Tecla+Sitges",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Esglesia+de+Sant+Bartomeu+i+Santa+Tecla+Sitges",
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
@@ -1316,7 +1336,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "7:30 PM",
         location: "Back Home",
         address: "Passeig de la Ribera, 41",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Passeig+de+la+Ribera+41+Sitges",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Stay+U-nique+Apartments+Pau+Claris+Carrer+de+Pau+Claris+99+Barcelona",
         babyMode: "Routine",
         gear: "N/A",
         transit: {
@@ -1342,18 +1362,19 @@ export const ITINERARY_DATA: DayItinerary[] = [
     events: [
       {
         time: "7:00 AM",
-        location: "Cabify Departure (Sitges)",
+        location: "Pre-booked Car Departure (Sitges)",
         address: "Passeig de la Ribera, 41, 08870 Sitges",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Passeig+de+la+Ribera+41+Sitges",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=InSitges+Ribera+41+Passeig+de+la+Ribera+Sitges",
+
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
           from: "Passeig de la Ribera, 41",
           to: "BCN Terminal 1",
           options: [
-            { method: "Cabify Kids", details: "⭐ Pre-installed car seat, ~50 min in light AM traffic", isRecommended: true, bookingUrl: "cabify://cabify/" }
+            { method: "Pre-booked Car", details: "⭐ Pre-installed car seat, ~40 min via C-32", isRecommended: true }
           ],
-          insight: "💡 ~50 min ride. Garraf tunnel can stall behind a slow truck — leave the buffer.",
+          insight: "💡 ~40 min ride at 7 AM (off-peak). Garraf tunnel can stall behind a slow truck — leave a small buffer.",
           departureTime: "7:00 AM"
         },
         vibe: "Coastal Goodbye",
@@ -1365,7 +1386,8 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "7:50 AM",
         location: "BCN T1 Curbside Drop",
         address: "08820 El Prat de Llobregat, Barcelona",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Barcelona+Airport+Terminal+1+Departures",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=Barcelona+Airport+Terminal+1",
+
         babyMode: "Routine",
         gear: "Stroller",
         vibe: "The 3-Hour Rule",
@@ -1424,7 +1446,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         babyMode: "Routine",
         gear: "Stroller",
         vibe: "Final Approach",
-        placeEmoji: "🚶",
+        placeEmoji: "🚪",
         description: "Head to the gate ~45 min before departure. Confirm bassinet row and check for last-minute upgrade openings.",
         localsSecret: "BCN gate areas in T1 have charging strips along the walls — top up devices for the flight."
       },
@@ -1446,7 +1468,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         babyMode: "Play",
         gear: "Stroller",
         vibe: "Maximize Floor Time",
-        placeEmoji: "🚶",
+        placeEmoji: "🚪",
         description: "Walk the gate area until final boarding is called. Squeeze one more diaper change in before doors close.",
         localsSecret: "Stand near the gate agent — they'll wave you forward as soon as it's clear."
       },
@@ -1465,6 +1487,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         location: "UA 991 Departure",
         address: "BCN → IAD",
         mapsUrl: "https://www.google.com/maps/search/?api=1&query=Barcelona+Airport+Terminal+1",
+
         babyMode: "Nap",
         gear: "N/A",
         vibe: "Adiós, Spain",
@@ -1481,6 +1504,7 @@ export const ITINERARY_DATA: DayItinerary[] = [
         location: "Land at IAD",
         address: "Dulles International Airport",
         mapsUrl: "https://www.google.com/maps/search/?api=1&query=Dulles+International+Airport",
+
         babyMode: "Routine",
         gear: "Stroller",
         vibe: "Touchdown",
@@ -1513,12 +1537,13 @@ export const ITINERARY_DATA: DayItinerary[] = [
         location: "Meet Parents at IAD",
         address: "Dulles International Airport",
         mapsUrl: "https://www.google.com/maps/search/?api=1&query=Dulles+International+Airport",
+
         babyMode: "Routine",
         gear: "Stroller",
         transit: {
           from: "IAD Arrivals",
           to: "618 South Royal Street Alexandria, VA",
-          options: [{ method: "Walking", details: "🚗 Parents' car (~45 min)", isRecommended: true }]
+          options: [{ method: "Family Car", details: "⭐ Parents' car (~45 min via Dulles Access Rd)", isRecommended: true }]
         },
         vibe: "Reunion",
         placeEmoji: "🫂",
@@ -1529,7 +1554,8 @@ export const ITINERARY_DATA: DayItinerary[] = [
         time: "4:30 PM",
         location: "Home Sweet Home",
         address: "618 South Royal Street Alexandria, VA 22314",
-        mapsUrl: "https://www.google.com/maps/search/?api=1&query=618+South+Royal+Street+Alexandria+VA+22314",
+        mapsUrl: "https://www.google.com/maps/search/?api=1&query=618+South+Royal+Street+Alexandria+VA",
+
         babyMode: "Routine",
         gear: "N/A",
         vibe: "Mission Accomplished",

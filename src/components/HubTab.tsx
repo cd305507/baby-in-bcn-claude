@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { openExternal } from "../lib/openExternal";
 import { motion, AnimatePresence } from 'motion/react';
-import { Plane, Home, Ticket, Phone, ExternalLink, Wifi, MapPin, Navigation, MessageCircle, Mail, X, ChevronLeft, ChevronRight, Info, LogIn, Sun, Cloud, Cloudy, CloudRain, CloudSun, Wind, Thermometer, Calendar, QrCode, Maximize2 } from 'lucide-react';
-import { FLIGHTS, LODGING, TICKETS, EMERGENCY } from '../data/logistics';
-import { FULL_FORECAST } from '../data/weather';
+import { Plane, Home, Ticket, Phone, ExternalLink, Wifi, MapPin, Navigation, MessageCircle, Mail, X, ChevronLeft, ChevronRight, Info, LogIn, Sun, Cloud, Cloudy, CloudRain, CloudSun, Wind, Thermometer, Calendar, QrCode, Maximize2, Car } from 'lucide-react';
+import { FLIGHTS, LODGING, TICKETS, TRANSPORT_BOOKINGS, EMERGENCY } from '../data/logistics';
+import { BARCELONA_FORECAST, SITGES_FORECAST, FULL_FORECAST as STATIC_FULL } from '../data/weather';
+import { useLiveForecast } from '../lib/weatherLive';
 import { LodgingInfo, FlightInfo, TicketInfo, EmergencyContact, WeatherForecastDay } from '../types';
 
 const CheckInModal: React.FC<{ 
@@ -70,7 +72,7 @@ const CheckInModal: React.FC<{
                         {step.links.map((link, i) => (
                           <button
                             key={i}
-                            onClick={() => window.open(link.url, '_blank')}
+                            onClick={() => openExternal(link.url)}
                             className="flex items-center justify-between gap-3 p-3 bg-white border border-gray-100 rounded-2xl hover:border-med-blue hover:bg-blue-50/30 transition-all group"
                           >
                             <span className="text-[10px] font-black text-med-dark uppercase tracking-tight">{link.label}</span>
@@ -88,7 +90,7 @@ const CheckInModal: React.FC<{
             <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex flex-col gap-3">
               {lodging.checkInInstructionsUrl && (
                 <button
-                  onClick={() => window.open(lodging.checkInInstructionsUrl, '_blank')}
+                  onClick={() => openExternal(lodging.checkInInstructionsUrl)}
                   className="w-full py-4 bg-med-dark text-white rounded-3xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-med-dark/10 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                   <ExternalLink className="w-4 h-4" />
@@ -270,7 +272,7 @@ const LodgingCard: React.FC<{ lodging: LodgingInfo }> = ({ lodging }) => {
               onClick={(e) => {
                 e.stopPropagation();
                 if (lodging.bookingRatingUrl) {
-                  window.open(lodging.bookingRatingUrl, '_blank');
+                  openExternal(lodging.bookingRatingUrl);
                 }
               }}
               className="inline-flex items-center gap-2 rounded-full bg-[#003580] pl-1 pr-3 py-1 shadow-sm hover:bg-[#002766] transition-colors"
@@ -292,7 +294,7 @@ const LodgingCard: React.FC<{ lodging: LodgingInfo }> = ({ lodging }) => {
 
         {/* Address card */}
         <button
-          onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lodging.address)}`, '_blank')}
+          onClick={() => openExternal(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lodging.address)}`)}
           className="flex items-start gap-2.5 w-full text-left bg-gray-50 hover:bg-white hover:border-med-blue/30 border border-gray-100 p-3.5 rounded-2xl transition-all group"
         >
           <MapPin className="w-4 h-4 text-med-blue mt-0.5 shrink-0" />
@@ -324,9 +326,14 @@ const LodgingCard: React.FC<{ lodging: LodgingInfo }> = ({ lodging }) => {
           </div>
         </div>
 
-        {/* Action row: Check-in steps + contacts */}
-        <div className="flex items-stretch gap-2">
-          {lodging.detailedCheckIn && (
+        {/* Action row: Check-in steps + contacts.
+            When detailedCheckIn exists (Barcelona apt), the primary button
+            stretches and the contacts collapse into icon-only buttons next to it.
+            When it doesn't (Sitges apt), the contact buttons spread out as
+            full-height, labeled buttons matching the primary's footprint —
+            otherwise they look smooshed in the corner. */}
+        {lodging.detailedCheckIn ? (
+          <div className="flex items-stretch gap-2">
             <button
               onClick={() => setShowCheckIn(true)}
               className="flex-1 py-3 bg-med-blue text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.18em] shadow-md shadow-med-blue/20 flex items-center justify-center gap-2 hover:bg-med-dark active:scale-[0.98] transition-all"
@@ -334,35 +341,63 @@ const LodgingCard: React.FC<{ lodging: LodgingInfo }> = ({ lodging }) => {
               <LogIn className="w-3.5 h-3.5" />
               Check-In Steps
             </button>
-          )}
-          <div className="flex gap-2">
+            <div className="flex gap-2">
+              {lodging.whatsapp && (
+                <button
+                  onClick={() => openExternal(`https://wa.me/${lodging.whatsapp!.replace(/\D/g, '')}`)}
+                  className="w-11 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90"
+                  title="WhatsApp"
+                >
+                  <MessageCircle className="w-4 h-4 fill-current" />
+                </button>
+              )}
+              {lodging.email && (
+                <button
+                  onClick={() => openExternal(`mailto:${lodging.email}`)}
+                  className="w-11 bg-med-blue/5 text-med-blue hover:bg-med-blue hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90"
+                  title="Email"
+                >
+                  <Mail className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={() => openExternal(lodging.url)}
+                className="w-11 bg-med-azure/10 text-med-azure hover:bg-med-azure hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90"
+                title="Listing"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-stretch gap-2">
             {lodging.whatsapp && (
               <button
-                onClick={() => window.open(`https://wa.me/${lodging.whatsapp!.replace(/\D/g, '')}`, '_blank')}
-                className="w-11 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90"
-                title="WhatsApp"
+                onClick={() => openExternal(`https://wa.me/${lodging.whatsapp!.replace(/\D/g, '')}`)}
+                className="flex-1 py-3 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.18em] flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
               >
-                <MessageCircle className="w-4 h-4 fill-current" />
+                <MessageCircle className="w-3.5 h-3.5 fill-current" />
+                WhatsApp
               </button>
             )}
             {lodging.email && (
               <button
-                onClick={() => window.open(`mailto:${lodging.email}`, '_blank')}
-                className="w-11 bg-med-blue/5 text-med-blue hover:bg-med-blue hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90"
-                title="Email"
+                onClick={() => openExternal(`mailto:${lodging.email}`)}
+                className="flex-1 py-3 bg-med-blue/10 text-med-blue hover:bg-med-blue hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.18em] flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
               >
-                <Mail className="w-4 h-4" />
+                <Mail className="w-3.5 h-3.5" />
+                Email
               </button>
             )}
             <button
-              onClick={() => window.open(lodging.url, '_blank')}
-              className="w-11 bg-med-azure/10 text-med-azure hover:bg-med-azure hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90"
-              title="Listing"
+              onClick={() => openExternal(lodging.url)}
+              className="flex-1 py-3 bg-med-azure/15 text-med-azure hover:bg-med-azure hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.18em] flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-3.5 h-3.5" />
+              Listing
             </button>
           </div>
-        </div>
+        )}
 
         {/* WiFi */}
         {lodging.wifiPassword && (
@@ -380,10 +415,25 @@ const LodgingCard: React.FC<{ lodging: LodgingInfo }> = ({ lodging }) => {
           </div>
         )}
 
+        {/* Reservation PDF — opens via openExternal() so iOS routes through
+            universal-link handoff (no flashing Safari View Controller).
+            Path lives under /lodging/* which is exempted from the SW
+            navigateFallback so the PDF resolves to the real file, not
+            the SPA index.html. */}
+        {lodging.attachmentUrl && (
+          <button
+            onClick={() => openExternal(lodging.attachmentUrl)}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-white border border-gray-200 text-med-dark rounded-2xl text-[11px] font-black uppercase tracking-[0.18em] hover:bg-gray-50 active:scale-[0.98] transition-transform"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            {lodging.attachmentLabel || 'View Confirmation'}
+          </button>
+        )}
+
         {/* Crib request callout */}
         {lodging.cribRequestNote && (
           <button
-            onClick={() => lodging.cribRequestUrl && window.open(lodging.cribRequestUrl, '_blank')}
+            onClick={() => lodging.cribRequestUrl && openExternal(lodging.cribRequestUrl)}
             className="w-full p-3.5 bg-med-blue/5 rounded-2xl border border-med-blue/20 flex items-start gap-3 hover:bg-med-blue/10 transition-colors group text-left"
           >
             <div className="w-8 h-8 bg-med-blue/15 rounded-lg flex items-center justify-center text-med-blue mt-0.5 shrink-0">
@@ -403,7 +453,7 @@ const LodgingCard: React.FC<{ lodging: LodgingInfo }> = ({ lodging }) => {
         {lodging.amenities && lodging.amenities.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {lodging.amenities.map(amenity => (
-              <span key={amenity} className="px-2.5 py-1 bg-gray-50 text-med-dark rounded-full text-[9px] font-black uppercase tracking-tight border border-gray-100">
+              <span key={amenity} className="px-3 py-1.5 bg-gray-50 text-med-dark rounded-full text-[11px] font-black uppercase tracking-tight border border-gray-100">
                 {amenity}
               </span>
             ))}
@@ -566,7 +616,7 @@ const TicketInfoModal: React.FC<{
                         {section.links.map((link, i) => (
                           <button
                             key={i}
-                            onClick={() => window.open(link.url, '_blank')}
+                            onClick={() => openExternal(link.url)}
                             className="flex items-center justify-between gap-3 p-3 bg-white border border-gray-100 rounded-2xl hover:border-med-coral hover:bg-coral-50/30 transition-all group"
                           >
                             <span className="text-[10px] font-black text-med-dark uppercase tracking-tight">{link.label}</span>
@@ -584,7 +634,7 @@ const TicketInfoModal: React.FC<{
             <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex flex-col gap-3">
               {ticket.bookingUrl && (
                 <button
-                  onClick={() => window.open(ticket.bookingUrl, '_blank')}
+                  onClick={() => openExternal(ticket.bookingUrl)}
                   className="w-full py-4 bg-med-coral text-white rounded-3xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-med-coral/10 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                   <ExternalLink className="w-4 h-4" />
@@ -602,46 +652,74 @@ const TicketInfoModal: React.FC<{
   );
 };
 
-const WeatherDetailModal: React.FC<{ 
-  day: WeatherForecastDay | null; 
-  isOpen: boolean; 
-  onClose: () => void 
-}> = ({ day, isOpen, onClose }) => {
+const WeatherDetailModal: React.FC<{
+  days: WeatherForecastDay[];
+  index: number;
+  onIndexChange: (i: number) => void;
+  onClose: () => void;
+}> = ({ days, index, onIndexChange, onClose }) => {
+  const day = days[index];
   if (!day) return null;
+  const hasPrev = index > 0;
+  const hasNext = index < days.length - 1;
 
   return (
     <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-med-dark/60 backdrop-blur-xl"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
-          >
-            {/* Header */}
-            <div className="p-6 bg-med-blue border-b border-white/10 flex justify-between items-center text-white">
-              <div className="flex items-center gap-3">
-                <Sun className="w-5 h-5 text-med-yellow" />
-                <div>
-                  <h3 className="text-xl font-black uppercase leading-none mb-1">Weather Forecast</h3>
-                  <p className="text-[10px] font-black text-white/60 uppercase tracking-widest leading-none">{day.date} • Day {day.tripDay}</p>
-                </div>
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="absolute inset-0 bg-med-dark/60 backdrop-blur-xl"
+        />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          className="relative bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
+        >
+          {/* Header */}
+          <div className="p-6 bg-med-blue border-b border-white/10 flex justify-between items-center text-white">
+            <div className="flex items-center gap-3">
+              <Sun className="w-5 h-5 text-med-yellow" />
+              <div>
+                <h3 className="text-xl font-black uppercase leading-none mb-1">Weather Forecast</h3>
+                <p className="text-[10px] font-black text-white/60 uppercase tracking-widest leading-none">{day.date} • Day {day.tripDay}</p>
               </div>
-              <button 
-                onClick={onClose}
-                className="p-2 bg-white/10 border border-white/10 rounded-2xl text-white hover:bg-white/20 transition-all shadow-sm active:scale-95"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
+            <button
+              onClick={onClose}
+              className="p-2 bg-white/10 border border-white/10 rounded-2xl text-white hover:bg-white/20 transition-all shadow-sm active:scale-95"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Day navigator — flips between days without closing the modal */}
+          <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+            <button
+              onClick={() => hasPrev && onIndexChange(index - 1)}
+              disabled={!hasPrev}
+              aria-label="Previous day"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-med-dark hover:bg-white hover:text-med-blue disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-med-dark active:scale-95 transition-all"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              Prev
+            </button>
+            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              {index + 1} of {days.length}
+            </p>
+            <button
+              onClick={() => hasNext && onIndexChange(index + 1)}
+              disabled={!hasNext}
+              aria-label="Next day"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-med-dark hover:bg-white hover:text-med-blue disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-med-dark active:scale-95 transition-all"
+            >
+              Next
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
 
             {/* Content */}
             <div className="p-6 space-y-4">
@@ -679,16 +757,15 @@ const WeatherDetailModal: React.FC<{
               </div>
 
               <button 
-                onClick={() => window.open(day.accuweatherUrl, '_blank')}
+                onClick={() => openExternal(day.accuweatherUrl)}
                 className="w-full py-4 bg-med-dark text-white rounded-3xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 Full AccuWeather Details
                 <ExternalLink className="w-3.5 h-3.5" />
               </button>
             </div>
-          </motion.div>
-        </div>
-      )}
+        </motion.div>
+      </div>
     </AnimatePresence>
   );
 };
@@ -696,19 +773,25 @@ const WeatherDetailModal: React.FC<{
 const WeatherCard: React.FC<{ day: WeatherForecastDay; onClick: () => void }> = ({ day, onClick }) => {
   const cond = day.conditions.toLowerCase();
   const isRainy = cond.includes('rain');
-  const isPartly = cond.includes('partly') || cond.includes('cloud');
+  // Split "partly" from plain "cloudy" so they each get their own icon —
+  // "partly cloudy / partly sunny" is a sun-behind-cloud, not full overcast.
+  const isPartly = cond.includes('partly');
+  const isOvercast = !isPartly && cond.includes('cloud');
   const isSunny = cond.includes('sunny') && !isPartly;
-  
+
   return (
-    <button 
+    <button
       onClick={onClick}
       className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col items-center text-center hover:border-med-blue hover:bg-blue-50/30 transition-all group scale-100 active:scale-95"
     >
-      <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1 group-hover:text-med-blue transition-colors">{day.dayOfWeek} {day.date}</p>
+      <p className="text-xs font-black text-med-coral uppercase tracking-tighter mb-1">Day {day.tripDay}</p>
+      <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2 group-hover:text-med-blue transition-colors">{day.dayOfWeek} {day.date}</p>
       <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center mb-2 group-hover:bg-white transition-colors">
         {isRainy ? (
           <CloudRain className="w-4 h-4 text-med-blue" />
         ) : isPartly ? (
+          <CloudSun className="w-4 h-4 text-med-yellow" />
+        ) : isOvercast ? (
           <Cloudy className="w-4 h-4 text-gray-500" />
         ) : isSunny ? (
           <Sun className="w-4 h-4 text-med-orange" />
@@ -718,9 +801,6 @@ const WeatherCard: React.FC<{ day: WeatherForecastDay; onClick: () => void }> = 
       </div>
       <p className="text-sm font-black text-med-dark leading-none mb-1">{day.high}/{day.low}</p>
       <p className="text-[7px] font-bold text-gray-500 uppercase tracking-tight leading-none italic">{day.conditions}</p>
-      <div className="mt-2 pt-2 border-t border-gray-50 w-full">
-        <p className="text-xs font-black text-med-coral uppercase tracking-tighter">Day {day.tripDay}</p>
-      </div>
     </button>
   );
 };
@@ -853,20 +933,32 @@ const ScanModal: React.FC<{
   );
 };
 
-const TicketCard: React.FC<{ ticket: TicketInfo }> = ({ ticket }) => {
+const TicketCard: React.FC<{
+  ticket: TicketInfo;
+  /** Render kind — drives icon + color theme so tickets vs transport
+      bookings are visually distinct at a glance. */
+  kind?: 'ticket' | 'transport';
+}> = ({ ticket, kind = 'ticket' }) => {
   const [showInfo, setShowInfo] = useState(false);
   const [showScan, setShowScan] = useState(false);
   const isHighlighted = window.location.hash.slice(1) === ticket.id;
 
+  // Color theme: tickets pull orange/yellow (existing); transport pulls
+  // blue (med-azure) so the eye can immediately tell which lane each card
+  // is in. Booked items in both lanes share the green confirmed treatment.
+  const Icon = kind === 'transport' ? Car : Ticket;
+  const unbookedBg = kind === 'transport' ? 'bg-med-azure/10' : 'bg-med-orange/10';
+  const unbookedText = kind === 'transport' ? 'text-med-azure' : 'text-med-orange';
+
   return (
-    <div 
+    <div
       id={ticket.id}
       className={`bg-white rounded-3xl p-5 shadow-sm border transition-all duration-500 overflow-hidden relative group ${isHighlighted ? 'border-med-coral ring-2 ring-med-coral/20 ring-offset-2' : 'border-gray-100'}`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${ticket.isBooked ? 'bg-green-100 text-green-600' : 'bg-med-orange/10 text-med-orange'}`}>
-            <Ticket className="w-6 h-6" />
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${ticket.isBooked ? 'bg-green-100 text-green-600' : `${unbookedBg} ${unbookedText}`}`}>
+            <Icon className="w-6 h-6" />
           </div>
           <div>
             <h3 className="font-black text-med-dark uppercase tracking-tight">{ticket.name}</h3>
@@ -891,9 +983,13 @@ const TicketCard: React.FC<{ ticket: TicketInfo }> = ({ ticket }) => {
                 <p className="text-[10px] font-mono font-black text-med-dark leading-none">{ticket.confirmation}</p>
               </div>
             ) : (
-              <button 
-                onClick={() => ticket.bookingUrl && window.open(ticket.bookingUrl, '_blank')}
-                className="px-4 py-2 bg-med-orange text-white rounded-xl text-[10px] font-black uppercase tracking-widest leading-tight shadow-md shadow-med-orange/20 hover:scale-105 active:scale-95 transition-all"
+              <button
+                onClick={() => ticket.bookingUrl && openExternal(ticket.bookingUrl)}
+                className={`px-4 py-2 text-white rounded-xl text-[10px] font-black uppercase tracking-widest leading-tight shadow-md hover:scale-105 active:scale-95 transition-all ${
+                  kind === 'transport'
+                    ? 'bg-med-azure shadow-med-azure/20'
+                    : 'bg-med-orange shadow-med-orange/20'
+                }`}
               >
                 Book<br />Now
               </button>
@@ -961,7 +1057,15 @@ const TicketCard: React.FC<{ ticket: TicketInfo }> = ({ ticket }) => {
 
 
 export const HubTab = () => {
-  const [selectedWeatherDay, setSelectedWeatherDay] = useState<WeatherForecastDay | null>(null);
+  const [selectedWeatherIndex, setSelectedWeatherIndex] = useState<number | null>(null);
+  // Pull the live forecast from Open-Meteo; falls back to the hardcoded
+  // arrays if the API hasn't yet responded or the call failed.
+  const { full: FULL_FORECAST, isLive: isLiveWeather } = useLiveForecast(
+    BARCELONA_FORECAST,
+    SITGES_FORECAST,
+  );
+  // Suppress unused warnings for the static fallback when live data is in play
+  void STATIC_FULL;
 
   React.useEffect(() => {
     const handleHashScroll = () => {
@@ -1026,19 +1130,29 @@ export const HubTab = () => {
             <Sun className="w-5 h-5" />
           </div>
           <h2 className="text-3xl font-black text-med-dark uppercase leading-tight">Weather</h2>
+          {isLiveWeather && (
+            <span
+              title="Forecast refreshed from Open-Meteo within the last 6 hours"
+              className="ml-1 flex items-center gap-1.5 text-[9px] font-black text-green-600 uppercase tracking-widest"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              Live
+            </span>
+          )}
         </div>
         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {FULL_FORECAST.map((day, i) => (
-            <WeatherCard key={i} day={day} onClick={() => setSelectedWeatherDay(day)} />
+            <WeatherCard key={i} day={day} onClick={() => setSelectedWeatherIndex(i)} />
           ))}
         </div>
       </section>
 
-      {selectedWeatherDay && (
-        <WeatherDetailModal 
-          day={selectedWeatherDay} 
-          isOpen={!!selectedWeatherDay} 
-          onClose={() => setSelectedWeatherDay(null)} 
+      {selectedWeatherIndex !== null && (
+        <WeatherDetailModal
+          days={FULL_FORECAST}
+          index={selectedWeatherIndex}
+          onIndexChange={setSelectedWeatherIndex}
+          onClose={() => setSelectedWeatherIndex(null)}
         />
       )}
 
@@ -1047,11 +1161,25 @@ export const HubTab = () => {
           <div className="w-10 h-10 bg-med-yellow/10 rounded-2xl flex items-center justify-center text-med-yellow">
             <Ticket className="w-5 h-5" />
           </div>
-          <h2 className="text-3xl font-black text-med-dark">BOOKINGS</h2>
+          <h2 className="text-3xl font-black text-med-dark">TICKETS</h2>
         </div>
         <div className="grid gap-4">
           {TICKETS.map((ticket, i) => (
-            <TicketCard key={i} ticket={ticket} />
+            <TicketCard key={i} ticket={ticket} kind="ticket" />
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-med-azure/10 rounded-2xl flex items-center justify-center text-med-azure">
+            <Car className="w-5 h-5" />
+          </div>
+          <h2 className="text-3xl font-black text-med-dark">RIDES &amp; TRANSFERS</h2>
+        </div>
+        <div className="grid gap-4">
+          {TRANSPORT_BOOKINGS.map((booking, i) => (
+            <TicketCard key={i} ticket={booking} kind="transport" />
           ))}
         </div>
       </section>

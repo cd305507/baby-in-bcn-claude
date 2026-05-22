@@ -1,6 +1,11 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  type Firestore,
+} from 'firebase/firestore';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
 const config = {
@@ -22,7 +27,16 @@ let _storage: FirebaseStorage | null = null;
 if (isFirebaseConfigured) {
   app = getApps().length > 0 ? getApps()[0] : initializeApp(config);
   _auth = getAuth(app);
-  _db = getFirestore(app);
+  // Use IndexedDB-backed persistent local cache so reads + writes work in
+  // airplane mode. `persistentMultipleTabManager` lets two app instances
+  // (e.g., a browser tab + an installed PWA) share the same cache without
+  // locking each other out. Writes made offline queue up and sync when
+  // the device reconnects.
+  _db = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager(),
+    }),
+  });
   _storage = getStorage(app);
 }
 
