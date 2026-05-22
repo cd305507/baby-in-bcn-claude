@@ -288,6 +288,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-med-bg text-med-dark font-sans selection:bg-med-orange/30 pb-32">
+      {/* Claude Code Banner */}
+      <div className="bg-med-yellow text-med-dark text-center text-xs font-black uppercase tracking-widest py-2 px-4">
+        ✨ Updated by Claude Code — working perfectly!
+      </div>
       {/* Scrollable Header Section (Branding + Nav) */}
       <div className="bg-med-blue text-white shadow-xl">
         <div 
