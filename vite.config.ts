@@ -17,7 +17,10 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss(),
       VitePWA({
-        registerType: 'prompt',
+        // autoUpdate = the SW silently skip-waits + clients.claim() when a new
+        // version is detected. No tap-to-update banner. Page reloads itself
+        // (see UpdatePrompt.tsx) the moment the new SW takes over.
+        registerType: 'autoUpdate',
         includeAssets: [
           'apple-touch-icon.png',
           'favicon-64.png',
