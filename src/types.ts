@@ -224,7 +224,7 @@ export interface DailyOutfit {
   recommendation: string;
 }
 
-export type PackingCategory = 'Family Essentials' | 'Adult Apparel' | 'Beach Gear' | 'Electronics' | 'Baby Clothes' | 'Toiletries';
+export type PackingCategory = 'Family Essentials' | 'Adult Apparel' | 'Beach Gear' | 'Electronics' | 'Baby Clothes' | 'Toiletries' | 'Shopping List';
 
 export interface PackingItem {
   id: string;

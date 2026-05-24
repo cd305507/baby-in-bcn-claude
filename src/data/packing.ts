@@ -93,6 +93,15 @@ export const INITIAL_PACKING_LIST: PackingItem[] = [
   { id: '74', name: 'Insect Repellent (DEET-Free for Baby)', category: 'Toiletries', isPacked: false },
   { id: '75', name: 'UPF Long-Sleeve Sun Top (Baby)', category: 'Baby Clothes', isPacked: false },
   { id: '76', name: 'Sunglasses for Cam (Strap-Style, Optional)', category: 'Baby Clothes', isPacked: false },
+
+  // Shopping List — pre-trip + in-Barcelona items to acquire. Check off as bought.
+  { id: '77', name: 'Stroller Gate-Check Travel Bag', category: 'Shopping List', isPacked: false, notes: 'Buy before trip — Amazon, ~$25. Protects UPPAbaby during gate-check.' },
+  { id: '78', name: 'Diaper Refill at Caprabo (Pau Claris 102)', category: 'Shopping List', isPacked: false, notes: 'Dodot brand. Across the street from apartment.' },
+  { id: '79', name: 'Spanish Baby Sunscreen — Mustela Mineral', category: 'Shopping List', isPacked: false, notes: 'Better SPF + reef-safe than what we have. Any Barcelona pharmacy.' },
+  { id: '80', name: 'Vacuum-Sealed Jamón Ibérico (Boqueria back stalls)', category: 'Shopping List', isPacked: false, notes: 'For home. Joselito stall has the best. Vacuum-pack for TSA.' },
+  { id: '81', name: 'Spanish Olive Oil (Souvenir)', category: 'Shopping List', isPacked: false, notes: 'Caprabo or any Carrefour — pick a Catalan Arbequina varietal.' },
+  { id: '82', name: 'Postcards for Family', category: 'Shopping List', isPacked: false, notes: 'La Rambla newsstands, ~€1 each. Mail from Sitges post office.' },
+  { id: '83', name: 'Sagrada Família Magnet for the Fridge', category: 'Shopping List', isPacked: false, notes: 'Inside the basilica gift shop on the way out.' },
 ];
 
 export const DAILY_OUTFIT_RECOMMENDATIONS: DailyOutfit[] = [

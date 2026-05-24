@@ -95,6 +95,7 @@ const SortableCategorySection: React.FC<{
               category === 'Adult Apparel' ? 'bg-med-azure/10 text-med-azure' :
               category === 'Beach Gear' ? 'bg-med-yellow/10 text-med-yellow' :
               category === 'Toiletries' ? 'bg-purple-500/10 text-purple-500' :
+              category === 'Shopping List' ? 'bg-green-500/10 text-green-600' :
               'bg-med-blue/10 text-med-blue'
             }`}>
               {getCategoryImage(category)}
@@ -417,7 +418,7 @@ export const PackingTab = () => {
     trip.writeCategoryOverrides(newCatOverrides);
   };
 
-  const [categories, setCategories] = useState<PackingCategory[]>(['Family Essentials', 'Baby Clothes', 'Adult Apparel', 'Beach Gear', 'Toiletries', 'Electronics']);
+  const [categories, setCategories] = useState<PackingCategory[]>(['Family Essentials', 'Baby Clothes', 'Adult Apparel', 'Beach Gear', 'Toiletries', 'Electronics', 'Shopping List']);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<'Section' | 'Item' | null>(null);
   const [newItemName, setNewItemName] = useState('');
@@ -540,6 +541,7 @@ export const PackingTab = () => {
       case 'Beach Gear': return <Wind className="w-5 h-5" />;
       case 'Toiletries': return <Bath className="w-5 h-5" />;
       case 'Electronics': return <Zap className="w-5 h-5" />;
+      case 'Shopping List': return <ShoppingBag className="w-5 h-5" />;
       default: return <ShoppingBag className="w-5 h-5" />;
     }
   };
