@@ -3,14 +3,89 @@ import { openExternal } from "../lib/openExternal";
 import { motion, AnimatePresence } from 'motion/react';
 import { Clock, Navigation, ExternalLink, Ticket, ChevronLeft, ChevronRight, Calendar, Star, Map, X, Info, Sun, Cloud, CloudRain, CloudSun } from 'lucide-react';
 import { ITINERARY_DATA } from '../data/itinerary';
-import { BARCELONA_FORECAST, SITGES_FORECAST } from '../data/weather';
-import { useLiveForecast } from '../lib/weatherLive';
 import { TICKETS } from '../data/logistics';
 import { TimelineEvent, BabyMode, TicketInfo, WeatherForecastDay } from '../types';
 import { DailyMap, MapStop } from './DailyMap';
 import { LOCATION_COORDINATES } from '../data/locations';
 
-const TicketInfoModal: React.FC<{ 
+// Converts inline **landmark** patterns to clickable Google Maps links.
+// City is inferred from the address ("Sitges" if present, else "Barcelona").
+const renderRich = (text: string | undefined, address: string): React.ReactNode => {
+  if (!text) return null;
+  const city = address?.includes('Sitges') ? 'Sitges' : 'Barcelona';
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    const m = part.match(/^\*\*([^*]+)\*\*$/);
+    if (m) {
+      const landmark = m[1];
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${landmark} ${city}`)}`;
+      return (
+        <a
+          key={i}
+          href={url}
+          onClick={(e) => { e.preventDefault(); openExternal(url); }}
+          className="font-black text-med-blue underline decoration-med-blue/40 underline-offset-[3px] decoration-[1.5px] hover:decoration-med-blue/80"
+        >
+          {landmark}
+        </a>
+      );
+    }
+    return <React.Fragment key={i}>{part}</React.Fragment>;
+  });
+};
+
+// Splits description text on `(N) ` markers into intro + numbered items for
+// mobile-readable list rendering. Falls back to single intro if no markers.
+const parseDescription = (text: string): { intro: string; items: string[] } => {
+  if (!text) return { intro: '', items: [] };
+  const matches = [...text.matchAll(/\(\d+\)\s+/g)];
+  if (matches.length === 0) return { intro: text, items: [] };
+  const intro = text.slice(0, matches[0].index).replace(/[.:]\s*$/, '').trim();
+  const items: string[] = [];
+  for (let i = 0; i < matches.length; i++) {
+    const start = (matches[i].index ?? 0) + matches[i][0].length;
+    const end = i < matches.length - 1 ? matches[i + 1].index : text.length;
+    items.push(text.slice(start, end).trim());
+  }
+  return { intro, items };
+};
+
+// Premium unified mini-box used for Local's Tip, Photo Op, Pickpocket,
+// Backup, Reminder. Each color is distinct so the user can scan the card
+// at a glance and tell box types apart.
+type SubBoxColor = 'yellow' | 'violet' | 'red' | 'cyan' | 'orange';
+
+const SUB_BOX_PALETTE: Record<SubBoxColor, { bg: string; border: string; label: string; iconBg: string }> = {
+  yellow: { bg: 'bg-yellow-50/80', border: 'border-yellow-200/70', label: 'text-yellow-700', iconBg: 'bg-yellow-100/80' },
+  violet: { bg: 'bg-violet-50/80', border: 'border-violet-200/70', label: 'text-violet-700', iconBg: 'bg-violet-100/80' },
+  red:    { bg: 'bg-red-50/80',    border: 'border-red-200/70',    label: 'text-red-600',    iconBg: 'bg-red-100/80' },
+  cyan:   { bg: 'bg-cyan-50/80',   border: 'border-cyan-200/70',   label: 'text-cyan-700',   iconBg: 'bg-cyan-100/80' },
+  orange: { bg: 'bg-orange-50/80', border: 'border-orange-200/70', label: 'text-orange-700', iconBg: 'bg-orange-100/80' },
+};
+
+const SubBox: React.FC<{
+  icon: string;
+  label: string;
+  color: SubBoxColor;
+  children: React.ReactNode;
+}> = ({ icon, label, color, children }) => {
+  const p = SUB_BOX_PALETTE[color];
+  return (
+    <div className={`p-3 rounded-2xl border ${p.bg} ${p.border} flex items-start gap-2.5`}>
+      <div className={`shrink-0 w-7 h-7 rounded-xl ${p.iconBg} flex items-center justify-center text-sm leading-none`}>
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className={`text-[9px] font-black ${p.label} uppercase tracking-[0.16em] mb-1`}>{label}</p>
+        <div className="text-[11px] font-medium text-med-dark leading-snug">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TicketInfoModal: React.FC<{
   ticket: TicketInfo; 
   isOpen: boolean; 
   onClose: () => void 
@@ -484,11 +559,6 @@ const DailyMapModal: React.FC<{
 
 export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, onStickyChange }: ItineraryTabProps) => {
   const currentDay = ITINERARY_DATA[currentDayIndex];
-  // Live weather — fall back to the static event.weatherDetail if the API
-  // hasn't responded or this day isn't in the live forecast window.
-  const { full: liveFullForecast } = useLiveForecast(BARCELONA_FORECAST, SITGES_FORECAST);
-  const liveWeatherForDay = liveFullForecast.find((w) => w.tripDay === currentDay.dayNumber)
-    || currentDay.weatherDetail;
   const [showSticky, setShowSticky] = React.useState(false);
   const [isMapOpen, setIsMapOpen] = React.useState(false);
   const [selectedTicket, setSelectedTicket] = React.useState<TicketInfo | null>(null);
@@ -641,14 +711,10 @@ export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, 
         </h2>
         <div className="flex items-center justify-center gap-2 mt-4">
           <button
-            onClick={() => liveWeatherForDay && setSelectedWeatherDay(liveWeatherForDay)}
+            onClick={() => currentDay.weatherDetail && setSelectedWeatherDay(currentDay.weatherDetail)}
             className="inline-flex items-center justify-center gap-2 px-4 py-1.5 bg-white rounded-full shadow-sm border border-gray-100 hover:bg-gray-50 active:scale-95 transition-all"
           >
-            <p className="text-[11px] font-black text-med-dark leading-none whitespace-nowrap">
-              {liveWeatherForDay
-                ? `${liveWeatherForDay.high.replace('°', '')}°/${liveWeatherForDay.low} · ${liveWeatherForDay.conditions}`
-                : currentDay.weather}
-            </p>
+            <p className="text-[11px] font-black text-med-dark leading-none whitespace-nowrap">{currentDay.weather}</p>
           </button>
           <button 
             onClick={() => setIsMapOpen(true)}
@@ -773,9 +839,47 @@ export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, 
                       );
                     })}
                   </div>
-                  <p className="text-[10px] font-bold text-med-blue/80 italic leading-tight px-1 mt-3">
-                    {event.transit.insight}
-                  </p>
+                  {event.transit.insight && (
+                    <p className="text-[10px] font-bold text-med-blue/80 italic leading-snug px-1 mt-3">
+                      {renderRich(event.transit.insight, event.address)}
+                    </p>
+                  )}
+                  {event.transit.walkStops && event.transit.walkStops.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-med-blue/10">
+                      <p className="text-[9px] font-black text-med-blue uppercase tracking-[0.18em] mb-2.5 px-1 flex items-center gap-1.5">
+                        <span>🚶</span> If walking, stops along the way
+                      </p>
+                      <ol className="space-y-2">
+                        {event.transit.walkStops.map((stop, i) => {
+                          const city = event.address?.includes('Sitges') ? 'Sitges' : 'Barcelona';
+                          const url = stop.mapsUrl ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${stop.name} ${city}`)}`;
+                          const isLast = i === event.transit!.walkStops!.length - 1;
+                          return (
+                            <li key={i} className="flex gap-2.5 items-start">
+                              <div className="shrink-0 flex flex-col items-center pt-0.5">
+                                <div className="w-2 h-2 rounded-full bg-med-blue ring-2 ring-med-blue/20" />
+                                {!isLast && <div className="w-[2px] flex-1 bg-med-blue/20 mt-1 min-h-[18px]" />}
+                              </div>
+                              <div className="min-w-0 flex-1 pb-1">
+                                <a
+                                  href={url}
+                                  onClick={(e) => { e.preventDefault(); openExternal(url); }}
+                                  className="text-[11px] font-black text-med-blue underline decoration-med-blue/30 underline-offset-[3px] decoration-[1.5px] hover:decoration-med-blue/80 leading-tight block"
+                                >
+                                  {stop.name}
+                                </a>
+                                {stop.note && (
+                                  <p className="text-[10px] font-medium text-gray-600 leading-snug mt-0.5">
+                                    {stop.note}
+                                  </p>
+                                )}
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    </div>
+                  )}
                 </motion.div>
                 <div className="w-1 h-8 bg-gradient-to-b from-med-blue/20 to-gray-200 rounded-full mt-2" />
               </div>
@@ -860,20 +964,45 @@ export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, 
                   </button>
                 </div>
 
-                <p className="text-gray-500 text-sm font-medium leading-relaxed">{event.description}</p>
-                
+                {(() => {
+                  const { intro, items } = parseDescription(event.description);
+                  return (
+                    <div className="space-y-3">
+                      {intro && (
+                        <p className="text-gray-600 text-[13px] font-medium leading-relaxed">
+                          {renderRich(intro, event.address)}
+                        </p>
+                      )}
+                      {items.length > 0 && (
+                        <ol className="space-y-2">
+                          {items.map((item, i) => (
+                            <li key={i} className="flex gap-2.5 items-start">
+                              <span className="shrink-0 w-5 h-5 mt-0.5 rounded-md bg-med-blue/10 text-med-blue text-[10px] font-black flex items-center justify-center tabular-nums">
+                                {i + 1}
+                              </span>
+                              <span className="text-[12px] text-gray-700 leading-relaxed">
+                                {renderRich(item, event.address)}
+                              </span>
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {event.recommendedDish && (
-                  <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-med-coral/10 via-white to-med-yellow/10 border border-med-coral/20 shadow-sm">
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-med-coral via-med-yellow to-med-coral" />
-                    <div className="px-5 pt-5 pb-4 flex items-start gap-4">
-                      <div className="shrink-0 w-12 h-12 rounded-2xl bg-white shadow-md border border-med-coral/10 flex items-center justify-center text-2xl">
+                  <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50/80 via-white to-rose-50/60 border border-amber-200/60 shadow-sm">
+                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-amber-400 via-rose-300 to-amber-400" />
+                    <div className="p-3 flex items-start gap-2.5">
+                      <div className="shrink-0 w-9 h-9 rounded-xl bg-white shadow-sm border border-amber-200/60 flex items-center justify-center text-lg leading-none">
                         👨‍🍳
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <p className="text-[9px] font-black text-med-coral uppercase tracking-[0.22em]">Chef's Pick</p>
+                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                          <p className="text-[9px] font-black text-amber-700 uppercase tracking-[0.16em]">Chef's Pick</p>
                           {event.rating && (
-                            <div className="flex items-center gap-1 bg-white/80 px-2 py-0.5 rounded-full border border-yellow-100">
+                            <div className="flex items-center gap-1 bg-white/80 px-1.5 py-0.5 rounded-full border border-yellow-100">
                               <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" />
                               <span className="text-[9px] font-black text-med-dark tabular-nums">{event.rating.toFixed(1)}</span>
                               {event.reviewCount && (
@@ -881,29 +1010,63 @@ export const ItineraryTab = ({ currentDayIndex, setCurrentDayIndex, liveStatus, 
                               )}
                             </div>
                           )}
+                          {event.priceRange && (
+                            <div className="flex items-center bg-white/80 px-1.5 py-0.5 rounded-full border border-green-100">
+                              <span className="text-[9px] font-black text-green-700 tabular-nums">💵 {event.priceRange}</span>
+                            </div>
+                          )}
                         </div>
-                        <p className="text-base font-black text-med-dark leading-tight tracking-tight">
+                        <p className="text-[13px] font-black text-med-dark leading-snug tracking-tight">
                           {event.recommendedDish}
                         </p>
                       </div>
                     </div>
                   </div>
                 )}
-                
+
                 {event.localsSecret && (
-                  <div className="p-3 bg-med-yellow/10 rounded-2xl border border-med-yellow/20 flex items-center gap-3">
-                    <span className="text-xl">🤫</span>
-                    <p className="text-[10px] font-bold text-med-dark leading-tight">{event.localsSecret}</p>
-                  </div>
+                  <SubBox icon="🤫" label="Local's Tip" color="yellow">
+                    {renderRich(event.localsSecret, event.address)}
+                  </SubBox>
                 )}
 
                 {event.photoOp && (
-                  <div className="p-3 bg-med-coral/10 rounded-2xl border border-med-coral/20 flex items-center gap-3">
-                    <span className="text-xl">📸</span>
-                    <p className="text-[10px] font-bold text-med-dark leading-tight italic">
-                      <span className="text-med-coral font-black uppercase tracking-widest mr-1">Instagram Spot:</span> {event.photoOp}
+                  <SubBox icon="📸" label="Instagram Spot" color="violet">
+                    {renderRich(event.photoOp, event.address)}
+                  </SubBox>
+                )}
+
+                {event.pickpocketAlert && (
+                  <SubBox icon="🥷" label="Pickpocket Hot Spot" color="red">
+                    {renderRich(event.pickpocketAlert, event.address)}
+                  </SubBox>
+                )}
+
+                {event.backup && (
+                  <SubBox icon="🔁" label="Backup Nearby" color="cyan">
+                    <p className="font-black text-med-dark mb-1 text-[12px]">
+                      {event.backup.mapsUrl ? (
+                        <a
+                          href={event.backup.mapsUrl}
+                          onClick={(e) => { e.preventDefault(); openExternal(event.backup!.mapsUrl!); }}
+                          className="text-med-blue underline decoration-med-blue/40 underline-offset-[3px] decoration-[1.5px]"
+                        >
+                          {event.backup.name}
+                        </a>
+                      ) : event.backup.name}
                     </p>
-                  </div>
+                    <p className="text-gray-600 font-medium">
+                      {renderRich(event.backup.reason, event.address)}
+                    </p>
+                  </SubBox>
+                )}
+
+                {event.reminder && (
+                  <SubBox icon="🔔" label="Reminder" color="orange">
+                    <div className="whitespace-pre-line">
+                      {renderRich(event.reminder, event.address)}
+                    </div>
+                  </SubBox>
                 )}
               </div>
             </motion.div>

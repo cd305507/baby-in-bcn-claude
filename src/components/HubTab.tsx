@@ -3,8 +3,7 @@ import { openExternal } from "../lib/openExternal";
 import { motion, AnimatePresence } from 'motion/react';
 import { Plane, Home, Ticket, Phone, ExternalLink, Wifi, MapPin, Navigation, MessageCircle, Mail, X, ChevronLeft, ChevronRight, Info, LogIn, Sun, Cloud, Cloudy, CloudRain, CloudSun, Wind, Thermometer, Calendar, QrCode, Maximize2, Car } from 'lucide-react';
 import { FLIGHTS, LODGING, TICKETS, TRANSPORT_BOOKINGS, EMERGENCY } from '../data/logistics';
-import { BARCELONA_FORECAST, SITGES_FORECAST, FULL_FORECAST as STATIC_FULL } from '../data/weather';
-import { useLiveForecast } from '../lib/weatherLive';
+import { FULL_FORECAST } from '../data/weather';
 import { LodgingInfo, FlightInfo, TicketInfo, EmergencyContact, WeatherForecastDay } from '../types';
 
 const CheckInModal: React.FC<{ 
@@ -1058,14 +1057,6 @@ const TicketCard: React.FC<{
 
 export const HubTab = () => {
   const [selectedWeatherIndex, setSelectedWeatherIndex] = useState<number | null>(null);
-  // Pull the live forecast from Open-Meteo; falls back to the hardcoded
-  // arrays if the API hasn't yet responded or the call failed.
-  const { full: FULL_FORECAST, isLive: isLiveWeather } = useLiveForecast(
-    BARCELONA_FORECAST,
-    SITGES_FORECAST,
-  );
-  // Suppress unused warnings for the static fallback when live data is in play
-  void STATIC_FULL;
 
   React.useEffect(() => {
     const handleHashScroll = () => {
@@ -1130,15 +1121,6 @@ export const HubTab = () => {
             <Sun className="w-5 h-5" />
           </div>
           <h2 className="text-3xl font-black text-med-dark uppercase leading-tight">Weather</h2>
-          {isLiveWeather && (
-            <span
-              title="Forecast refreshed from Open-Meteo within the last 6 hours"
-              className="ml-1 flex items-center gap-1.5 text-[9px] font-black text-green-600 uppercase tracking-widest"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              Live
-            </span>
-          )}
         </div>
         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {FULL_FORECAST.map((day, i) => (

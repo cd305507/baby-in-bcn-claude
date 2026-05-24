@@ -12,7 +12,10 @@ import { useEffect, useState } from 'react';
 import type { WeatherForecastDay } from '../types';
 
 const CACHE_KEY = 'baby-bcn:weather-live-v1';
-const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+// Short TTL: 30 minutes. Cache exists purely so the UI doesn't flash blank
+// while a fresh fetch is in flight — every mount STILL triggers a background
+// refresh regardless of cache age.
+const CACHE_TTL_MS = 30 * 60 * 1000;
 
 // Coordinates for the two trip locations.
 const BCN = { lat: 41.39, lng: 2.16 };
@@ -163,6 +166,10 @@ function loadCache(): CacheShape | null {
  * tripDay numbering aligned to the static schedule: Days 1-8 = BCN, Days
  * 9-12 = Sitges). Falls back to the static arrays you pass in if the API
  * call hasn't completed or has failed.
+ *
+ * The hook ALWAYS triggers a background refetch on mount — cached data is
+ * just shown immediately to avoid a UI flash. Call the returned `refresh()`
+ * to force a fresh fetch on demand (manual refresh button).
  */
 export function useLiveForecast(
   fallbackBcn: WeatherForecastDay[],
@@ -172,39 +179,60 @@ export function useLiveForecast(
   sitges: WeatherForecastDay[];
   full: WeatherForecastDay[];
   isLive: boolean;
+  lastFetched: number | null;
+  refresh: () => Promise<void>;
 } {
   const initial = loadCache();
-  const [state, setState] = useState<{ bcn: WeatherForecastDay[]; sitges: WeatherForecastDay[]; isLive: boolean }>(
-    () => ({
-      bcn: initial ? alignTripDays(initial.bcn, fallbackBcn) : fallbackBcn,
-      sitges: initial ? alignTripDays(initial.sitges, fallbackSitges, 9) : fallbackSitges,
-      isLive: !!initial,
-    }),
-  );
+  const [state, setState] = useState<{
+    bcn: WeatherForecastDay[];
+    sitges: WeatherForecastDay[];
+    isLive: boolean;
+    lastFetched: number | null;
+  }>(() => ({
+    bcn: initial ? alignTripDays(initial.bcn, fallbackBcn) : fallbackBcn,
+    sitges: initial ? alignTripDays(initial.sitges, fallbackSitges, 9) : fallbackSitges,
+    isLive: !!initial,
+    lastFetched: initial ? initial.ts : null,
+  }));
+
+  const applyResult = (result: CacheShape) => {
+    setState({
+      bcn: alignTripDays(result.bcn, fallbackBcn),
+      sitges: alignTripDays(result.sitges, fallbackSitges, 9),
+      isLive: true,
+      lastFetched: result.ts,
+    });
+  };
+
+  const refresh = async () => {
+    // Force a fetch even if cache is fresh
+    try {
+      localStorage.removeItem(CACHE_KEY);
+    } catch {}
+    const result = await fetchLive();
+    if (result) applyResult(result);
+  };
 
   useEffect(() => {
-    const cached = loadCache();
-    if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
-      // Already fresh — nothing to do
-      return;
-    }
+    // ALWAYS kick off a refetch on mount. Cached data is shown instantly
+    // (set in initial useState above); the fetch result replaces it when
+    // the network call completes. The cache TTL only matters for the
+    // fetchLive in-flight deduplication.
     fetchLive().then((result) => {
-      if (!result) return;
-      setState({
-        bcn: alignTripDays(result.bcn, fallbackBcn),
-        sitges: alignTripDays(result.sitges, fallbackSitges, 9),
-        isLive: true,
-      });
+      if (result) applyResult(result);
     });
-    // We intentionally don't depend on fallback arrays — they're stable
-    // module-level exports.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Construct the full 12-day timeline the same way as the static FULL_FORECAST:
-  // BCN days 1-8 (May 24-31), Sitges days 9-12 (Jun 1-4).
   const full = [...state.bcn.slice(0, 8), ...state.sitges.slice(8, 12)];
-  return { bcn: state.bcn, sitges: state.sitges, full, isLive: state.isLive };
+  return {
+    bcn: state.bcn,
+    sitges: state.sitges,
+    full,
+    isLive: state.isLive,
+    lastFetched: state.lastFetched,
+    refresh,
+  };
 }
 
 /**

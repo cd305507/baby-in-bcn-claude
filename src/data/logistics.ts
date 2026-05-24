@@ -28,7 +28,7 @@ export const FLIGHTS: FlightInfo[] = [
 export const LODGING: LodgingInfo[] = [
   {
     name: 'Stay U-nique Pau Claris',
-    address: 'Carrer de Pau Claris, 99, 08009 Barcelona',
+    address: 'Carrer de Pau Claris, 99, Fl 3, Dr 2, 08009 Barcelona',
     checkIn: 'May 25, 3:00 PM (Requested 10:30 AM)',
     checkOut: 'Jun 1, 11:00 AM',
     confirmation: '34713/2026',

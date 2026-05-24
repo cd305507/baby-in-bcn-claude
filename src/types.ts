@@ -14,6 +14,15 @@ export interface TransitOption {
   bookingUrl?: string;
 }
 
+export interface WalkStop {
+  /** Landmark name — rendered as a clickable Google Maps link. */
+  name: string;
+  /** One short clause describing what to look for. Keep to ~10 words. */
+  note?: string;
+  /** Optional override map URL — otherwise auto-built from name + city. */
+  mapsUrl?: string;
+}
+
 export interface BookingDetails {
   confirmationCode?: string;
   pin?: string;
@@ -37,6 +46,10 @@ export interface TimelineEvent {
     options: TransitOption[];
     insight?: string;
     departureTime?: string;
+    /** Sequential stops along the recommended walking route. Rendered as a
+        vertical timeline list. Use this INSTEAD of cramming landmarks into
+        the `insight` prose when the walk has 3+ named stops. */
+    walkStops?: WalkStop[];
   };
   vibe: string;
   placeEmoji?: string;
@@ -51,9 +64,26 @@ export interface TimelineEvent {
   bookingDetails?: BookingDetails;
   photoOp?: string;
   localsSecret?: string;
+  /** Location-specific pickpocket / scam warning. Renders as a coral
+      sub-box on the event card. Only set for known hot spots — La Rambla,
+      Boqueria, Sagrada queue, Plaça Reial, etc. */
+  pickpocketAlert?: string;
+  /** Evening reminder shown as a yellow sub-box on the event card. Used
+      to surface "tomorrow you need to..." prompts (book Cabify the night
+      before, WhatsApp Sitges hotel, etc.). */
+  reminder?: string;
   rating?: number;
   reviewCount?: number;
   recommendedDish?: string;
+  /** Estimated total for 2 people in USD as a compact range, e.g. "$60–90". Shown next to rating chip on mobile, so do NOT append "for 2" — it overflows. */
+  priceRange?: string;
+  /** A second restaurant to try if this one is full / closed / not appealing.
+      Chosen to be near the PREVIOUS itinerary stop so it's easy to detour to. */
+  backup?: {
+    name: string;
+    reason: string;
+    mapsUrl?: string;
+  };
 }
 
 export interface WeatherForecastDay {

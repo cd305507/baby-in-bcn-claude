@@ -486,6 +486,117 @@ export const WelcomeTab = ({ setActiveTab, liveStatus }: WelcomeTabProps) => {
         </div>
       </section>
 
+      {/* Takeout near the BCN apartment */}
+      <section className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 overflow-hidden relative">
+        <div className="absolute -top-10 -left-10 w-40 h-40 bg-med-blue/5 rounded-full blur-3xl" />
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 bg-med-blue/10 rounded-2xl flex items-center justify-center text-med-blue text-2xl">
+            🛍️
+          </div>
+          <div>
+            <h3 className="text-2xl font-black text-med-dark uppercase leading-none">Takeout Near Pau Claris</h3>
+            <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Walk-to picks, baby's asleep</p>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {[
+            { name: "Cipriani Pizzeria", cuisine: "Neapolitan pizza, fast counter pickup", walk: "5 min", rating: 4.4, price: "$25–40", url: "https://www.google.com/maps/search/?api=1&query=Cipriani+Pizzeria+Carrer+Arago+Barcelona" },
+            { name: "Honest Greens (Pg de Gràcia)", cuisine: "Bowls, roast chicken, salads — kid-easy", walk: "9 min", rating: 4.4, price: "$30–45", url: "https://www.google.com/maps/search/?api=1&query=Honest+Greens+Passeig+de+Gracia+Barcelona" },
+            { name: "Goiko (Pg de Gràcia)", cuisine: "Smash burgers, ready in 15 min", walk: "6 min", rating: 4.3, price: "$30–50", url: "https://www.google.com/maps/search/?api=1&query=Goiko+Passeig+de+Gracia+Barcelona" },
+            { name: "Las Muns (Roger de Llúria)", cuisine: "Argentinian empanadas — perfect grab-and-go", walk: "7 min", rating: 4.5, price: "$15–30", url: "https://www.google.com/maps/search/?api=1&query=Las+Muns+Roger+de+Lluria+Barcelona" },
+            { name: "Sushita Café (Pg de Gràcia)", cuisine: "Quick sushi boxes, low-key", walk: "8 min", rating: 4.2, price: "$35–55", url: "https://www.google.com/maps/search/?api=1&query=Sushita+Cafe+Passeig+de+Gracia+Barcelona" },
+            { name: "Patties Burger Bar", cuisine: "Gourmet burgers + craft beer (chain) ", walk: "6 min", rating: 4.3, price: "$30–50", url: "https://www.google.com/maps/search/?api=1&query=Patties+Burger+Roger+de+Lluria+Barcelona" },
+          ].map((spot) => (
+            <a
+              key={spot.name}
+              href={spot.url}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-stretch justify-between gap-3 p-3 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-med-blue/5 hover:border-med-blue/20 transition-colors"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-black text-med-dark uppercase truncate">{spot.name}</p>
+                <p className="text-[10px] text-gray-500 font-medium leading-snug mb-1.5">{spot.cuisine}</p>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-white border border-yellow-100 rounded-full text-[9px] font-black text-med-dark tabular-nums">
+                    ⭐ {spot.rating.toFixed(1)}
+                  </span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 bg-white border border-green-100 rounded-full text-[9px] font-black text-green-700 tabular-nums">
+                    💵 {spot.price}
+                  </span>
+                </div>
+              </div>
+              <div className="shrink-0 flex flex-col items-end justify-center">
+                <span className="text-[9px] font-black text-med-blue uppercase tracking-widest">{spot.walk}</span>
+                <span className="text-[8px] text-gray-400 font-bold uppercase">walk</span>
+              </div>
+            </a>
+          ))}
+        </div>
+        <p className="text-[10px] text-gray-400 font-medium leading-snug mt-4 italic">
+          All under 10 min walking from the apartment. Most accept walk-in pickup; phone-ahead orders save 5–10 min during dinner rush. ⚠️ Always double-check Google Maps for current hours — local spots occasionally close for vacaciones.
+        </p>
+      </section>
+
+      {/* Glovo early-dinner delivery */}
+      <section className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 overflow-hidden relative">
+        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-med-yellow/10 rounded-full blur-3xl" />
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 bg-med-yellow/20 rounded-2xl flex items-center justify-center text-2xl">
+            🛵
+          </div>
+          <div>
+            <h3 className="text-2xl font-black text-med-dark uppercase leading-none">Glovo Early Dinner</h3>
+            <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Order by 5:30 PM · Cam asleep by 7</p>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {[
+            { name: "La Tagliatella", cuisine: "Italian — pasta + pizza, the toddler-safe order", note: "30–40 min", rating: 4.3, price: "$30–50" },
+            { name: "Honest Greens", cuisine: "Bowls + roast chicken, healthier weeknight option", note: "25–35 min", rating: 4.4, price: "$30–45" },
+            { name: "Goiko Grill", cuisine: "Burgers + fries — easy comfort food", note: "30–40 min", rating: 4.3, price: "$30–50" },
+            { name: "Vapiano", cuisine: "Made-to-order pasta, mild kid options", note: "35–45 min", rating: 4.0, price: "$30–45" },
+            { name: "Sushita Express", cuisine: "Sushi boxes if you want lighter + cold", note: "25–35 min", rating: 4.2, price: "$40–60" },
+            { name: "Foster's Hollywood", cuisine: "American comfort — ribs, mac, the works", note: "35–45 min", rating: 3.9, price: "$35–55" },
+            { name: "Chök", cuisine: "Donuts + cookies — the dessert order", note: "25–35 min", rating: 4.5, price: "$10–20" },
+          ].map((spot) => (
+            <div
+              key={spot.name}
+              className="flex items-stretch justify-between gap-3 p-3 bg-gray-50 rounded-2xl border border-gray-100"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-black text-med-dark uppercase truncate">{spot.name}</p>
+                <p className="text-[10px] text-gray-500 font-medium leading-snug mb-1.5">{spot.cuisine}</p>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-white border border-yellow-100 rounded-full text-[9px] font-black text-med-dark tabular-nums">
+                    ⭐ {spot.rating.toFixed(1)}
+                  </span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 bg-white border border-green-100 rounded-full text-[9px] font-black text-green-700 tabular-nums">
+                    💵 {spot.price}
+                  </span>
+                </div>
+              </div>
+              <div className="shrink-0 flex flex-col items-end justify-center">
+                <span className="text-[9px] font-black text-med-coral uppercase tracking-widest text-right">{spot.note}</span>
+                <span className="text-[8px] text-gray-400 font-bold uppercase">delivery</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <a
+          href="https://glovoapp.com/es/en/barcelona/"
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 bg-med-yellow text-med-dark rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-med-yellow/80 transition-colors"
+        >
+          Open Glovo
+          <ChevronRight className="w-3.5 h-3.5" />
+        </a>
+        <p className="text-[10px] text-gray-400 font-medium leading-snug mt-3 italic">
+          Tip: kitchens slow down after 8 PM in BCN. Order by 5:30–6 PM and food usually lands before Cam's 7:15 PM bedtime.
+        </p>
+      </section>
+
       {/* Tapas Roulette */}
       <section className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 overflow-hidden relative">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-med-coral/5 rounded-full blur-3xl" />
